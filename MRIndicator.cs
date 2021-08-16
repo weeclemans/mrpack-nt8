@@ -60,15 +60,27 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 		
 		private double LastPrice_Line;
 		
-		bool key=false;
-		bool isTrial=false;
-		//bool isFirstDraw=false;
-		bool isConnection=true;
-		bool keyFileFound=true;
-		bool isfullVersion=false;
-		StreamReader SR;
+		public string AnyFile0;
 		
-
+		System.Windows.Media.Brush Claster_Color;
+		System.Windows.Media.Brush Claster_FilterMin_Color;
+		System.Windows.Media.Brush Claster_FilterMax_Color;
+		
+		SharpDX.Direct2D1.Brush Claster_ColorDX;
+		SharpDX.Direct2D1.Brush Claster_FilterMin_ColorDX;
+		SharpDX.Direct2D1.Brush Claster_FilterMax_ColorDX;
+		SharpDX.Direct2D1.Brush Input_ClasterMax_ColorDX;
+		
+		SharpDX.Direct2D1.Brush brush0DX;
+		SharpDX.Direct2D1.Brush brush1DX;
+		SharpDX.Direct2D1.Brush brush2DX;
+		SharpDX.Direct2D1.Brush brush3DX;
+		SharpDX.Direct2D1.Brush brush4DX;
+		SharpDX.Direct2D1.Brush brush5DX;
+		SharpDX.Direct2D1.Brush brush6DX;
+		SharpDX.Direct2D1.Brush brush7DX;
+		SharpDX.Direct2D1.Brush brush8DX;
+		SharpDX.Direct2D1.Brush brush9DX;
 		
 		private void OnMenuButtonClick(object sender, RoutedEventArgs rea)
 		{
@@ -146,7 +158,8 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 		
 		public void CreateNewTickAggregatorEllipse(DateTime time, double price, Model.TickAggregatorElement data)
 		{
-			
+			try
+			{
 			int radius = data.Volume* (Input_TickAggregator_Distance/2) / indicatorModel.MaxTickAggregatorVolume;
 			if(radius<5)radius=5;
 			
@@ -154,13 +167,16 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 			DrawingTools.CustomEllipse elipse = Draw.CustomEllipse(this,time.ToString()+" - "+price.ToString(),time,data.TopPrice+TickSize/2, indicatorModel);
 			elipse.Radius=radius;
 			elipse.TickAggregatorData = data;
+			
+			}
+			catch (Exception ex) { Print("MRPack CreateNewTickAggregatorEllipse 162: " + ex); }
 		}
 		
 		
 		public void CreateNewRangeProfile(string tag, DateTime startTime,double top,DateTime endTime,double bot, int ProfileType, bool extended)
 		{
-			
-			
+			try
+			{
 			//DrawingTools.RangeProfile profile = Draw.RangeProfile(this,tag,true, new DateTime(2017,12,18,10,0,0), 1.1895, new DateTime(2017,12,18,15,0,0), 1.187, Brushes.Red, 2, indicatorModel);
 			//DrawingTools.RangeProfile profile = Draw.RangeProfile(this,tag,true, startTime, top, endTime, bot, Brushes.Red, 2, indicatorModel);
 			DrawingTools.RangeProfile2 profile = Draw.RangeProfile2(this,tag, startTime, top, endTime, bot,Brushes.Red, indicatorModel);
@@ -168,16 +184,14 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 			profile.ProfileType = ProfileType;
 			profile.ExtendedLine = extended;
 			indicatorModel.RangeProfiles.Add(profile);
-			//profile.IsLocked = false;
 			
 			int startBar = (int)ChartControl.GetSlotIndexByX(100);
 			int endBar = (int)ChartControl.GetSlotIndexByX(200);
-			
-			
-			
+			}
+			catch (Exception ex) { Print("MRPack CreateNewRangeProfile 181: " + ex); }
 		}
 		
-		public static DateTime GetNetworkTime()
+		/*public static DateTime GetNetworkTime()
         {
 			try{
 	            const string ntpServer = "pool.ntp.org";
@@ -226,29 +240,32 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 				return new DateTime();
 			}
             
-        }
+        }*/
 		
-		static uint SwapEndianness(ulong x)
+		/*static uint SwapEndianness(ulong x)
         {
             return (uint)(((x & 0x000000ff) << 24) +
                            ((x & 0x0000ff00) << 8) +
                            ((x & 0x00ff0000) >> 8) +
                            ((x & 0xff000000) >> 24));
         }	
-		
-		
+		*/
+		/*
 		 static byte[] GetMd5Hash(MD5 md5Hash, string input)//Функция получения хеша из строки
         {
             byte[] data = md5Hash.ComputeHash(GetBytes(input));
             return data;
         }
+		*/
+		/*
 		 static byte[] GetBytes(string str)
         {
             byte[] bytes = new byte[str.Length * sizeof(char)];
             System.Buffer.BlockCopy(str.ToCharArray(), 0, bytes, 0, bytes.Length);
             return bytes;
         }
-		
+		*/
+		/*
 		 public static bool DSAVerifyHash(byte[] HashValue, byte[] SignedHashValue,
            DSAParameters DSAKeyInfo, string HashAlg)
         {
@@ -280,10 +297,9 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 
             return verified;
         }
+		*/
 		
-		
-		
-		private DateTime prevdatePrint;
+		//private DateTime prevdatePrint;
 		
 		protected override void OnStateChange()
 		{
@@ -299,8 +315,6 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 				DrawVerticalGridLines						= true;
 				PaintPriceMarkers							= true;
 				ScaleJustification							= NinjaTrader.Gui.Chart.ScaleJustification.Right;
-				//Disable this property if your indicator requires custom values that cumulate with each new market data event. 
-				//See Help Guide for additional information.
 				IsSuspendedWhileInactive					= false;
 				
 				#region Input_Claster
@@ -316,6 +330,9 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 					Input_Claster_Filter1_Color=Brushes.Cyan;
 					Input_Claster_Filter2_Color=Brushes.Magenta;
 					Input_ClasterMax_Color=Brushes.OrangeRed;
+					Claster_Color = Input_Claster_Color;
+					Claster_FilterMin_Color = Input_Claster_Filter2_Color;
+					Claster_FilterMax_Color = Input_Claster_Filter1_Color;
 				#endregion
 				
 				#region Vertical Volume Input Default
@@ -366,12 +383,18 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 				#endregion
 				
 				#region Profile Range Default
+					Range_Profile_Text_OnOff = true;
+					Range_Profile_Text_Color = Brushes.Yellow;
 					Input_ProfileRange_Inside_Color=Brushes.LightSkyBlue;
 					Input_ProfileRange_POC_Color=Brushes.Azure;
 					//Input_RangeProfile_BidAsk_OnOff=false;
 					//Input_RangeProfile_ExtendedLine_OnOff=true;
 					Input_ProfileRange_Border_Color=Brushes.DimGray;
 					//RangeProfileFileXML=AnyFile0;
+					Input_ProfileRange_Inside_Bid_Color = Brushes.Red;
+					Input_ProfileRange_Inside_Ask_Color = Brushes.Green;
+					Profile_Text_Opacity = 90;
+					Profile_Opacity = 50;
 				#endregion
 				
 				
@@ -428,129 +451,28 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 			    tempBrush.Opacity = 1 * 0.1f;
 			    TextBrush = tempBrush.Clone();
                 TextBrush.Freeze();
-				
-				
 			}
 			else if (State == State.Configure)
 			{
-				
-				#region lalalal
-						byte[] HashValueProcessor = new byte[20];
-						byte[] SignedHashValue = new byte[40];
-			            string source = Cbi.License.MachineId;
-						DateTime serverTime=new DateTime();
-						//try{
-							serverTime=GetNetworkTime();
-						if(serverTime.ToString()=="01.01.0001 0:00:00")isConnection=false;
-
-						string endTime="";
-						//Print(AnyFile0);
-						try{
-							//Print("Key File Path:"+KeyFile_path);
-							String textfile=AnyFile0;
-							SR = new StreamReader(textfile, System.Text.Encoding.Unicode, true);
-						}catch(Exception e){
-							Print(e);
-							keyFileFound=false;
-						}
-			            string line;
-			            int z = 0;
-			            DSAParameters publicKeyInfo1 = new DSAParameters();
-						
-						
-						int tmpByteArray_Counter = 780;
-			            byte[] tmpByteArray_G = new byte[] { 137,194,139,245,126,171,150,140,132,96,7,211,183,120,206,200,71,111,112,89,164,249,155,19,161,237,37,100,97,10,108,50,63,80,5,129,201,131,185,163,228,113,215,98,75,192,119,105,207,204,240,6,243,202,13,72,240,58,151,74,205,221,169,107,118,83,240,36,23,187,229,249,119,32,100,108,6,200,55,8,119,150,193,25,64,251,95,136,229,95,21,1,209,65,36,191,16,170,82,139,196,157,63,185,212,107,146,105,13,147,112,52,174,130,195,103,38,184,152,28,202,198,147,135,232,185,113,157};
-			            byte[] tmpByteArray_J = new byte[] { 186,190,193,65,73,127,195,42,18,193,92,31,243,69,12,39,18,63,36,72,76,87,223,13,22,30,74,157,45,107,252,215,215,76,36,79,75,246,52,166,3,123,209,130,184,60,116,14,105,142,168,16,214,64,162,82,224,64,135,200,48,15,170,33,18,116,34,91,17,70,29,161,196,147,20,118,86,154,62,130,127,190,134,175,19,30,120,94,187,5,228,199,93,151,68,46,76,110,181,186,217,56,23,88,233,128,208,214};
-			            byte[] tmpByteArray_P = new byte[] { 169,165,221,101,15,137,155,103,207,27,194,147,240,73,174,190,198,196,90,128,72,28,202,213,110,11,210,97,94,58,77,155,16,247,105,180,157,42,32,9,146,139,184,254,86,61,109,2,32,188,237,123,61,58,63,161,81,49,176,245,90,134,135,120,42,153,2,35,150,66,84,197,149,234,202,134,106,246,231,71,230,141,250,13,129,87,54,26,76,185,138,69,99,114,149,15,17,7,142,252,45,174,109,69,167,55,130,12,250,168,200,3,119,17,159,8,164,146,222,182,57,152,57,13,244,75,108,135};
-			            byte[] tmpByteArray_Q = new byte[] { 232,143,238,30,251,119,205,173,166,9,174,16,54,168,58,90,61,82,191,137};
-			            byte[] tmpByteArray_Seed = new byte[] { 210,221,87,192,220,167,99,254,127,52,51,125,171,19,177,71,26,18,200,40};
-			            byte[] tmpByteArray_Y = new byte[] {15,189,51,109,142,25,215,80,145,24,156,51,106,30,23,120,146,233,61,34,136,69,116,133,114,225,149,9,3,229,92,54,163,210,232,3,229,213,101,124,16,89,90,185,232,137,56,238,76,95,46,18,167,74,249,106,7,26,220,150,219,95,100,11,200,40,94,235,58,1,180,170,246,197,29,52,194,219,110,170,2,61,119,155,231,215,90,27,44,48,154,21,159,203,191,238,171,146,78,65,243,107,23,247,166,110,243,231,216,88,90,252,148,65,245,220,57,153,50,116,48,6,183,56,30,173,186,248};
-								
-						
-						publicKeyInfo1.Counter = tmpByteArray_Counter;
-			            publicKeyInfo1.G = tmpByteArray_G;
-			            publicKeyInfo1.J = tmpByteArray_J;
-			            publicKeyInfo1.P = tmpByteArray_P;
-			            publicKeyInfo1.Q = tmpByteArray_Q;
-			            publicKeyInfo1.Seed = tmpByteArray_Seed;
-			            publicKeyInfo1.Y = tmpByteArray_Y;
-
-						while (keyFileFound && (line = SR.ReadLine()) != null )
-			            {
-							if (z == 0)
-			                {
-			                    string[] str_mas = line.Split('/');
-			                    List<byte> byte_tmp = new List<byte>();
-								string str="";
-			                    for (int i = 0; i < str_mas.Length - 1; i++){ byte_tmp.Add(Convert.ToByte(str_mas[i]));str+=Convert.ToChar(Convert.ToByte(str_mas[i]));}
-			                   // publicKeyInfo1.Y = byte_tmp.ToArray();
-								endTime=str;
-								//Print(endTime);
-			                }
-			                if (z == 1)
-			                {
-			                    string[] str_mas = line.Split('/');
-			                    List<byte> byte_tmp = new List<byte>();
-			                    for (int i = 0; i < str_mas.Length - 1; i++) byte_tmp.Add(Convert.ToByte(str_mas[i]));
-			                    SignedHashValue = byte_tmp.ToArray();
-			                }
-			                z++;
-			            }
-						
-						if(keyFileFound){
-							SR.Close();
-							
-							//Print("kyky");
-							using (MD5 md5Hash = MD5.Create())
-				            {
-				                GetMd5Hash(md5Hash, source+endTime).CopyTo(HashValueProcessor, 0);//Получаем хэш введенного номера процессора и записываем его в массив ьайт размером 20 байт.
-				            }
-							
-							
-							//Print(myDate.Day.ToString());
-							bool tmp = DSAVerifyHash(HashValueProcessor, SignedHashValue, publicKeyInfo1, "SHA1");
-				            if (tmp)
-				            {
-				               // Print("YES");
-								key=true;
-								//Print("--"+endTime);
-								if(endTime=="00:00:0000 00:00:00"){
-									//key=true;
-									isfullVersion=true;
-									isTrial=false;
-								}else{
-									isfullVersion=false;
-									DateTime endDateTime = DateTime.ParseExact(endTime, "dd:MM:yyyy HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
-									if(serverTime<=endDateTime){
-										isTrial=true;
-									}
-									else{
-										isTrial=false;	
-									}
-								}
-				            }
-				            else
-				            {
-								key=false;
-				            }
-						}
-					#endregion
-				
 				indicatorModel = new Model(this);
+				indicatorModel.Range_Profile_Text_OnOff = Range_Profile_Text_OnOff;
+				indicatorModel.Range_Profile_Text_Color = Range_Profile_Text_Color;
 				indicatorModel.Input_ProfileRange_Inside_Color=Input_ProfileRange_Inside_Color;
 				indicatorModel.Input_ProfileRange_POC_Color=Input_ProfileRange_POC_Color;
 				/*indicatorModel.Input_RangeProfile_BidAsk_OnOff=false;
 				indicatorModel.Input_RangeProfile_ExtendedLine_OnOff=true;*/
 				indicatorModel.Input_ProfileRange_Border_Color=Input_ProfileRange_Border_Color;
-				
+				indicatorModel.Input_ProfileRange_Inside_Bid_Color = Input_ProfileRange_Inside_Bid_Color;
+				indicatorModel.Input_ProfileRange_Inside_Ask_Color = Input_ProfileRange_Inside_Ask_Color;
+				indicatorModel.Profile_Text_Opacity = Profile_Text_Opacity;
+				indicatorModel.Profile_Opacity = Profile_Opacity;
 				indicatorModel.LoadProfiles();
 				
 				Brush tempBrush = TextBrush.Clone();
 			    tempBrush.Opacity = 1 * 0.1f;
 			    TextBrush = tempBrush.Clone();
                 TextBrush.Freeze();
-						
-						
+				
 				/*DateTime d1 = new DateTime(2017,12,23,23,20,10,10);		
 				DateTime d2 = new DateTime(2017,12,23,23,20,11,20);	
 				TimeSpan t = d2-d1;
@@ -568,8 +490,7 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 			}
 			else if(State == State.Historical)
 			{
-			
-				 ChartControl.Dispatcher.InvokeAsync((() =>
+					ChartControl.Dispatcher.InvokeAsync((() =>
 				    {
 						
 				        // Grid already exists
@@ -585,7 +506,7 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 				          // Align the control to the top right corner of the chart
 				          HorizontalAlignment = HorizontalAlignment.Left,
 				          VerticalAlignment = VerticalAlignment.Top,
-						  Margin = new Thickness(20,20,0,0)
+						  Margin = new Thickness(10,20,0,0)
 				        };
 				 
 				        // Define the two columns in the grid, one for each button
@@ -602,15 +523,18 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 				          Name = "MyMenuButton",
 				          Content = "Menu",
 				          Foreground = Brushes.White,
-							MinWidth=70,
-							Width = 70
+							MinWidth=40,
+							Width = 40,
+							FontSize = 11.0,
+							Padding = new Thickness(0, 0, 0, 0),
+							Height = 18
 				        };
 						
 						
 						stackPanel = new System.Windows.Controls.StackPanel();
 						stackPanel.Orientation = System.Windows.Controls.Orientation.Horizontal;
 						//stackPanel.Margin =  new Thickness(20,0,0,0);
-						
+						stackPanel.Visibility = Visibility.Collapsed;
 						
 						
 				 
@@ -621,9 +545,12 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 				          Content = "HV",
 				          Foreground = Brushes.WhiteSmoke,
 				          Background = Input_Histogramm_OnOff ? Input_ButtonsOn_Color : Input_ButtonsOff_Color,
-						  Margin =  new Thickness(10,0,0,0),
-							MinWidth=40,
-							Width = 40
+						  Margin =  new Thickness(6,0,0,0),
+							MinWidth=25,
+							Width = 25,
+							FontSize = 11.0,
+							Padding = new Thickness(0, 0, 0, 0),
+							Height = 18
 				        };
 						myVVButton = new System.Windows.Controls.Button
 				        {
@@ -631,9 +558,12 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 				          Content = "VV",
 				          Foreground = Brushes.WhiteSmoke,
 				          Background = Input_VerticalVolume_OnOff ? Input_ButtonsOn_Color : Input_ButtonsOff_Color,
-						  Margin =  new Thickness(10,0,0,0),
-							MinWidth=40,
-							Width = 40
+						  Margin =  new Thickness(6,0,0,0),
+							MinWidth=25,
+							Width = 25,
+							FontSize = 11.0,
+							Padding = new Thickness(0, 0, 0, 0),
+							Height = 18
 				        };
 						myDPButton = new System.Windows.Controls.Button
 				        {
@@ -641,9 +571,12 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 				          Content = "DP",
 				          Foreground = Brushes.WhiteSmoke,
 				          Background = Input_PocOnDay_OnOff ? Input_ButtonsOn_Color : Input_ButtonsOff_Color,
-						  Margin =  new Thickness(10,0,0,0),
-							MinWidth=40,
-							Width = 40
+						  Margin =  new Thickness(6,0,0,0),
+							MinWidth=25,
+							Width = 25,
+							FontSize = 11.0,
+							Padding = new Thickness(0, 0, 0, 0),
+							Height = 18
 				        };
 						myRPButton = new System.Windows.Controls.Button
 				        {
@@ -651,9 +584,12 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 				          Content = "RP",
 				          Foreground = Brushes.WhiteSmoke,
 				          Background = Input_ButtonsOff_Color,
-						  Margin =  new Thickness(10,0,0,0),
-							MinWidth=40,
-							Width = 40
+						  Margin =  new Thickness(6,0,0,0),
+							MinWidth=25,
+							Width = 25,
+							FontSize = 11.0,
+							Padding = new Thickness(0, 0, 0, 0),
+							Height = 18
 				        };
 						myTSButton = new System.Windows.Controls.Button
 				        {
@@ -661,9 +597,12 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 				          Content = "TS",
 				          Foreground = Brushes.WhiteSmoke,
 				          Background = Input_TandS_OnOff ? Input_ButtonsOn_Color : Input_ButtonsOff_Color,
-						  Margin =  new Thickness(10,0,0,0),
-							MinWidth=40,
-							Width = 40
+						  Margin =  new Thickness(6,0,0,0),
+							MinWidth=25,
+							Width = 25,
+							FontSize = 11.0,
+							Padding = new Thickness(0, 0, 0, 0),
+							Height = 18
 				        };
 						myMSButton = new System.Windows.Controls.Button
 				        {
@@ -671,9 +610,12 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 				          Content = "MS",
 				          Foreground = Brushes.WhiteSmoke,
 				          Background = Input_MS_OnOff ? Input_ButtonsOn_Color : Input_ButtonsOff_Color,
-						  Margin =  new Thickness(10,0,0,0),
-							MinWidth=40,
-							Width = 40
+						  Margin =  new Thickness(6,0,0,0),
+							MinWidth=25,
+							Width = 25,
+							FontSize = 11.0,
+							Padding = new Thickness(0, 0, 0, 0),
+							Height = 18
 				        };
 						myTAButton = new System.Windows.Controls.Button
 				        {
@@ -681,9 +623,12 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 				          Content = "TA",
 				          Foreground = Brushes.WhiteSmoke,
 				          Background = Input_TickAggregator_OnOff ? Input_ButtonsOn_Color : Input_ButtonsOff_Color,
-						  Margin =  new Thickness(10,0,0,0),
-							MinWidth=40,
-							Width = 40
+						  Margin =  new Thickness(6,0,0,0),
+							MinWidth=25,
+							Width = 25,
+							FontSize = 11.0,
+							Padding = new Thickness(0, 0, 0, 0),
+							Height = 18
 				        };
 					
 						stackPanel.Children.Add(myTSButton);
@@ -761,17 +706,13 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 				    }));
 				  }
 			}
-		
-		
 		bool tmp =true;
 		protected override void OnMarketData(MarketDataEventArgs marketDataUpdate)
 		{
 			if (marketDataUpdate.MarketDataType == MarketDataType.Last)
 			{
-				if(!(key && ((isTrial && isConnection) || isfullVersion)))
-				{return;}
-				
-				
+				try
+				{
 				PrintType printType = PrintType.NONE;
 				LastPrice_Line = marketDataUpdate.Price;
 				if (marketDataUpdate.Price >= marketDataUpdate.Ask)
@@ -798,124 +739,121 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 				
 				
 				//Print(marketDataUpdate.Time.ToString()+" - "+((int)marketDataUpdate.Volume).ToString()+" - "+marketDataUpdate.Price.ToString()+" - "+printType.ToString());
-				
+				}
+				catch (Exception ex) { Print("MRPack OnMarketData 723: " + ex); }
 			}
 		}
-
 		protected override void OnBarUpdate()
 		{
-			//Add your custom indicator logic here.
 			//Print(Time[0]);
+			try
+            {
+			if (Time[0] == null)
+			return;
 			indicatorModel.CloseBar(Time[0]);
 			
 			if (Bars.IsFirstBarOfSession)
 				indicatorModel.CloseDay();
-				
+			}
+            catch (Exception ex) { Print("MRPack OnBarUpdate 738: " + ex); }	
 		}
-		
-		
-		
-		
-		
-		
-		
-		
 		protected override void OnRender(ChartControl chartControl, ChartScale chartScale)
 		{
-			if(isFirstDraw)
+			try
+            {
+			int nb=(ChartBars.ToIndex-ChartBars.FromIndex);
+			if(BarsArray[0] == null || ChartBars == null || ChartControl == null || Bars.Instrument == null || !IsVisible 
+				|| chartScale.ScaleJustification != ScaleJustification.Right || CurrentBars[0] <= BarsRequiredToPlot || nb < 7 || IsInHitTest || indicatorModel == null)
+				{
+					return;
+				}
+			//Stopwatch stopWatch = new Stopwatch();
+        	//stopWatch.Start();
+			
+			brush1DX = new SharpDX.Direct2D1.SolidColorBrush(RenderTarget, SharpDX.Color.WhiteSmoke);
+			
+			if(
+				//isFirstDraw 
+				Input_TickAggregator_OnOff
+				)
 			{
 				for(int i=0;i<indicatorModel.TickAggregatorElements.Count;i++)
 				{
 					//Print(indicatorModel.TickAggregatorElements[i].Time.ToString()+" - "+indicatorModel.TickAggregatorElements[i].Price.ToString()+" - "+indicatorModel.TickAggregatorElements[i].Volume.ToString()+" - "+indicatorModel.TickAggregatorElements[i].LowPrice.ToString()+" - "+indicatorModel.TickAggregatorElements[i].TopPrice.ToString());
 					CreateNewTickAggregatorEllipse(indicatorModel.TickAggregatorElements[i].Time,indicatorModel.TickAggregatorElements[i].Price,indicatorModel.TickAggregatorElements[i]);
+				
 				}
 			}
-			
-			if(!(key && ((isTrial && isConnection) || isfullVersion)))
+			if (!Input_TickAggregator_OnOff)
 			{
-				#region Comands
-				SharpDX.Direct2D1.SolidColorBrush KBrush = new SharpDX.Direct2D1.SolidColorBrush(RenderTarget, SharpDX.Color.Red);
-				SharpDX.DirectWrite.Factory fontFactory = new SharpDX.DirectWrite.Factory();
-				SharpDX.DirectWrite.TextFormat KTextFormat = new SharpDX.DirectWrite.TextFormat(fontFactory, "Segoe UI", 50f);
-						
-				if(isConnection){
-					if(keyFileFound){
-						if(key){
-							if(!isfullVersion){
-								if(isTrial){
-									//RenderTarget.DrawText("That is trial version",KTextFormat,new RectangleF(100,100,1000,100),KBrush);
-								}else{
-									RenderTarget.DrawText("Trial is end",KTextFormat,new SharpDX.RectangleF(100,100,1000,100),KBrush);
-								}	
-							}
-						}else{
-							RenderTarget.DrawText("This is not a license",KTextFormat,new SharpDX.RectangleF(100,100,1000,100),KBrush);
+				
+				DrawingTools.CustomEllipse l1 = null;
+				foreach (Gui.NinjaScript.IChartObject thisObject in ChartPanel.ChartObjects)
+		  		{
+					if(thisObject is NinjaTrader.NinjaScript.DrawingTools.CustomEllipse)
+			  		{
+						l1 = thisObject as NinjaTrader.NinjaScript.DrawingTools.CustomEllipse;
+						//break;
+						if (l1 != null)
+						{
+     						System.Reflection.BindingFlags bfObject = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+    						System.Reflection.MethodInfo methodNT = typeof(ChartControl).GetMethod("RemoveDrawingTool", bfObject);
+     						methodNT.Invoke(ChartControl, new Object [] { l1, false, false });
 						}
-					}else{
-						RenderTarget.DrawText("Key file not found",KTextFormat,new SharpDX.RectangleF(100,100,1000,100),KBrush);
-					}	
-				}else{
-					if(!isfullVersion){
-						RenderTarget.DrawText("Connection lost",KTextFormat,new SharpDX.RectangleF(100,100,1000,100),KBrush);
 					}
 				}
-			#endregion
+			}
+			if (!Bars.IsTickReplay)
+			{
+				SharpDX.Direct2D1.SolidColorBrush KBrush = new SharpDX.Direct2D1.SolidColorBrush(RenderTarget, SharpDX.Color.Red);
+				SharpDX.DirectWrite.Factory fontFactory = new SharpDX.DirectWrite.Factory();
+				SharpDX.DirectWrite.TextFormat KTextFormat = new SharpDX.DirectWrite.TextFormat(fontFactory, "Segoe UI", 30f);
+				
+				RenderTarget.DrawText("Tick Replay is Disabled",KTextFormat,new SharpDX.RectangleF(50,50,1000,100),KBrush);
+				
+				KBrush.Dispose();
+				fontFactory.Dispose();
+				KTextFormat.Dispose();
 				return;
 			}
-				
-			
-			
 			
 			maxValue = chartScale.MaxValue;
 			minValue = chartScale.MinValue;
-			/*Stopwatch stopWatch = new Stopwatch();
-        	stopWatch.Start();*/
-			Brush Claster_Color;
-			Brush Claster_FilterMin_Color;
-			Brush Claster_FilterMax_Color;
+			
 			int Claster_FilterMin_Volume;
 			int Claster_FilterMax_Volume;
 			
-			Brush Histogramm_Claster_Color;
+			//Brush Histogramm_Claster_Color;
 			Brush Histogramm_Claster_FilterMin_Color;
 			Brush Histogramm_Claster_FilterMax_Color;
 			int Histogramm_Claster_FilterMin_Volume;
 			int Histogramm_Claster_FilterMax_Volume;
 			
-			
-			
-			#region Instrument
-					if( Bars == null || ChartControl == null || Bars.Instrument == null || !IsVisible)
-				{
-					return;
-				}
+			//#region Instrument
+					
 
-			    try
-			    {
-			        int textSize    = TextSize;
-			        int cph     = ChartPanel.H;
+			   // try
+			   //{
+			        //int textSize    = TextSize;
+			        //int cph     = ChartPanel.H;
 
-			        if (UseAutoTextSize)
-			            textSize = (int) (cph * 0.75f);
+			       // if (UseAutoTextSize)
+			            //textSize = (int) (cph * 0.75f);
 
-			        SimpleFont simpleFont = new SimpleFont(ChartControl.Properties.LabelFont.Family.ToString(), textSize);
+			       // SimpleFont simpleFont = new SimpleFont(ChartControl.Properties.LabelFont.Family.ToString(), textSize);
 	                // Place the text in OnRender to adjust automatically if needed
-			        Draw.TextFixed(this, "SymbolText", Instrument.MasterInstrument.Name, TextPosition.Center, TextBrush, simpleFont, Brushes.Transparent, Brushes.Transparent, 0);
-			    }
-			    catch (Exception ex)
-			    {
-			        Print(Name + " : " + ex);
-			    }
-			#endregion
+			       // Draw.TextFixed(this, "SymbolText", Instrument.MasterInstrument.Name, TextPosition.Center, TextBrush, simpleFont, Brushes.Transparent, Brushes.Transparent, 0);
+			   // }
+			    //catch (Exception ex)
+			    //{
+			       // Print(Name + " : " + ex);
+			   // }
+			//#endregion
 		
-			
-			
-			
 			indicatorModel.SetGraficDimensions(chartScale.GetYByValue(ChartPanel.MaxValue),chartScale.GetYByValue(ChartPanel.MaxValue+TickSize),
 												chartControl.GetXByTime(indicatorModel.ListOfBar.ElementAt(1).Time),chartControl.GetXByTime(indicatorModel.ListOfBar.ElementAt(0).Time));
 			
 			SharpDX.DirectWrite.TextFormat Claster_textFormat = chartControl.Properties.LabelFont.ToDirectWriteTextFormat();
-			
 			
 			System.Windows.Media.SolidColorBrush vv_Color = (System.Windows.Media.SolidColorBrush)Input_VerticalVolume_Color;
 			SharpDX.Direct2D1.LinearGradientBrush linearGradientBrush_VerticalVolume_Standart = new SharpDX.Direct2D1.LinearGradientBrush(RenderTarget, new SharpDX.Direct2D1.LinearGradientBrushProperties()
@@ -957,7 +895,6 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 					}
 				}));
 			
-			
 			if(Input_Claster_Filter1_Value<=Input_Claster_Filter2_Value)
 			{
 				Claster_FilterMin_Color = Input_Claster_Filter1_Color;
@@ -986,8 +923,6 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 				Histogramm_Claster_FilterMax_Volume = Input_Histogramm_Filter1;
 			}
 			
-			
-			
 			int MaxVV = 0;
 			for(int i=ChartBars.FromIndex;i<ChartBars.ToIndex;i++)
 			{
@@ -1003,32 +938,28 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 				
 			}
 			
-			
-			
 			#region PriceLine Drawing
 			//	LastPrice_line
 				if(Input_PriceLine_OnOff){
 					SharpDX.Vector2 point0 = new SharpDX.Vector2();
 					SharpDX.Vector2 point1 = new SharpDX.Vector2();
 				 	SharpDX.DirectWrite.TextFormat textFormatPriceLine = chartControl.Properties.LabelFont.ToDirectWriteTextFormat();
-					SharpDX.Direct2D1.Brush PriceLine_Color_Brush = Input_PriceLine_Color.ToDxBrush(RenderTarget);
+					brush0DX = Input_PriceLine_Color.ToDxBrush(RenderTarget);
 					
 					point0.X = chartControl.GetXByTime(indicatorModel.ListOfBar.Last().Time)+indicatorModel.Claster_Width_Max+2;
 					point0.Y = chartScale.GetYByValue(LastPrice_Line);
 					point1.X = ChartPanel.W;
 					point1.Y = point0.Y;
-				 
 					
 					//RenderTarget.FillGeometry(myLineGeometry,PriceLine_Color_Brush);
-					RenderTarget.DrawLine(point0, point1, PriceLine_Color_Brush, 1);
-					RenderTarget.DrawText(LastPrice_Line.ToString(),textFormatPriceLine,new SharpDX.RectangleF((point0.X)+indicatorModel.Claster_Width_Max+15,point0.Y,100,20),PriceLine_Color_Brush);
+					RenderTarget.DrawLine(point0, point1, brush0DX, 1);
+					RenderTarget.DrawText(LastPrice_Line.ToString(),textFormatPriceLine,new SharpDX.RectangleF((point0.X)+indicatorModel.Claster_Width_Max+15,point0.Y,100,20),brush0DX);
+					
+					textFormatPriceLine.Dispose();
+					brush0DX.Dispose();
 				}
 				
 			#endregion
-			
-			
-			
-			
 			
 			bool flagForCurrentBar = false;
 			for(int i=ChartBars.FromIndex;i<ChartBars.ToIndex;i++)
@@ -1050,15 +981,18 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 					BarPositionX+=indicatorModel.Claster_Width_Max;
 				}
 				
-				
-				
-				
 				if(Input_Claster_OnOff)
 				{
 					IEnumerable<KeyValuePair<double, Model.Claster>> clasters;// = bar.ListOfClasters.Where(c => c.Key<=ChartPanel.MaxValue && c.Key>=ChartPanel.MinValue);
+					brush2DX = new SharpDX.Direct2D1.SolidColorBrush(RenderTarget, SharpDX.Color.Red);
+					brush3DX = new SharpDX.Direct2D1.SolidColorBrush(RenderTarget, SharpDX.Color.Green);
+					brush9DX = Input_Claster_Color.ToDxBrush(RenderTarget);
+					if (!(bar.ListOfClasters.IsNullOrEmpty()))
+					{
 					if(indicatorModel.Claster_Height>1)
 					{
 						clasters = bar.ListOfClasters.Where(c => c.Key<=ChartPanel.MaxValue && c.Key>=ChartPanel.MinValue);
+						
 					}
 					else
 					{
@@ -1066,8 +1000,10 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 						
 						int clasterPositionY1 = chartScale.GetYByValue(bar.ListOfClasters.First().Key)- (int)(indicatorModel.Claster_Height/2);
 						int clasterPositionY2 = chartScale.GetYByValue(bar.ListOfClasters.Last().Key)+ (int)(indicatorModel.Claster_Height/2);
-						RenderTarget.FillRectangle(new SharpDX.RectangleF(BarPositionX, clasterPositionY1 , 1, clasterPositionY2-clasterPositionY1),Input_Claster_Color.ToDxBrush(RenderTarget));
+						
+						RenderTarget.FillRectangle(new SharpDX.RectangleF(BarPositionX, clasterPositionY1 , 1, clasterPositionY2-clasterPositionY1),brush9DX);
 					}
+					//}
 					//Print(indicatorModel.ListOfBar.Count);
 					foreach(KeyValuePair<double, Model.Claster> claster in clasters)
 					{
@@ -1082,33 +1018,32 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 						else{
 							int Dec_RealVol_MinVol = clasterVolume-Input_ClasterMinVolume;
 							int Dec_MaxVol_MinVol = Input_ClasterMaxVolume-Input_ClasterMinVolume;
-							int Procent_DecRealVol_MinVol_Dec_MaxVol_MinVol = Dec_RealVol_MinVol*100/Dec_MaxVol_MinVol;
-							Claster_RealWidth=Procent_DecRealVol_MinVol_Dec_MaxVol_MinVol*indicatorModel.Claster_Width_Max/100;
+							if (Dec_MaxVol_MinVol != 0)														// Edited by PD
+							{	
+								int Procent_DecRealVol_MinVol_Dec_MaxVol_MinVol = Dec_RealVol_MinVol*100/Dec_MaxVol_MinVol;
+								Claster_RealWidth= Math.Max(1, Procent_DecRealVol_MinVol_Dec_MaxVol_MinVol*indicatorModel.Claster_Width_Max/100);
+							}
 						}
 						
-						if(Claster_RealWidth<1) Claster_RealWidth=1;
-						
-						
-						Claster_Color = Input_Claster_Color;
+						//if(Claster_RealWidth<1) Claster_RealWidth=1;
+						Claster_ColorDX = brush9DX;
 						if(clasterVolume>=Claster_FilterMax_Volume)
 						{
-							Claster_Color = Claster_FilterMax_Color;
+							Claster_ColorDX = Claster_FilterMax_ColorDX;
 							/*if(!(indicatorModel.Claster_Height>1))
 								Claster_RealWidth*=3;*/
 						}
 						else if(clasterVolume>=Claster_FilterMin_Volume)
 						{
-							Claster_Color = Claster_FilterMin_Color;
+							Claster_ColorDX = Claster_FilterMin_ColorDX;
 							/*if(!(indicatorModel.Claster_Height>1))
 								Claster_RealWidth*=3;*/
 						}
 						
 						if(claster.Key==bar.PocPrice && Input_MaxClaster_OnOff)
-							Claster_Color = Input_ClasterMax_Color;
+							Claster_ColorDX = Input_ClasterMax_ColorDX;
 							
-						
-							
-						RenderTarget.FillRectangle(new SharpDX.RectangleF(BarPositionX, clasterPositionY - (int)(indicatorModel.Claster_Height/2), Claster_RealWidth, indicatorModel.Claster_Height),Claster_Color.ToDxBrush(RenderTarget));
+						RenderTarget.FillRectangle(new SharpDX.RectangleF(BarPositionX, clasterPositionY - (int)(indicatorModel.Claster_Height/2), Claster_RealWidth, indicatorModel.Claster_Height),Claster_ColorDX);
 						
 						if(Input_ClasterText_OnOff)
 						{
@@ -1120,25 +1055,28 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 								string str = str1+str2+str3;
 								if(indicatorModel.Claster_Width_Max>=str.Length*8 && indicatorModel.Claster_Height>=10)
 								{
-									RenderTarget.DrawText(str1,Claster_textFormat,new SharpDX.RectangleF(BarPositionX,clasterPositionY - (int)(indicatorModel.Claster_Height/2),indicatorModel.Claster_Width_Max,indicatorModel.Claster_Height),Brushes.WhiteSmoke.ToDxBrush(RenderTarget));
-									RenderTarget.DrawText(str2,Claster_textFormat,new SharpDX.RectangleF(BarPositionX+str1.Length*8,clasterPositionY - (int)(indicatorModel.Claster_Height/2),indicatorModel.Claster_Width_Max,indicatorModel.Claster_Height),Brushes.Red.ToDxBrush(RenderTarget));
-									RenderTarget.DrawText("+",Claster_textFormat,new SharpDX.RectangleF(BarPositionX+str1.Length*8+str2.Length*8,clasterPositionY - (int)(indicatorModel.Claster_Height/2),indicatorModel.Claster_Width_Max,indicatorModel.Claster_Height),Brushes.WhiteSmoke.ToDxBrush(RenderTarget));
-									RenderTarget.DrawText(str3,Claster_textFormat,new SharpDX.RectangleF(BarPositionX+str1.Length*8+str2.Length*8+8,clasterPositionY - (int)(indicatorModel.Claster_Height/2),indicatorModel.Claster_Width_Max,indicatorModel.Claster_Height),Brushes.Green.ToDxBrush(RenderTarget));
+									RenderTarget.DrawText(str1,Claster_textFormat,new SharpDX.RectangleF(BarPositionX,clasterPositionY - (int)(indicatorModel.Claster_Height/2),indicatorModel.Claster_Width_Max,indicatorModel.Claster_Height),brush1DX);
+									RenderTarget.DrawText(str2,Claster_textFormat,new SharpDX.RectangleF(BarPositionX+str1.Length*8,clasterPositionY - (int)(indicatorModel.Claster_Height/2),indicatorModel.Claster_Width_Max,indicatorModel.Claster_Height),brush2DX);
+									RenderTarget.DrawText("x",Claster_textFormat,new SharpDX.RectangleF(BarPositionX+str1.Length*8+str2.Length*8,clasterPositionY - (int)(indicatorModel.Claster_Height/2),indicatorModel.Claster_Width_Max,indicatorModel.Claster_Height),brush1DX);
+									RenderTarget.DrawText(str3,Claster_textFormat,new SharpDX.RectangleF(BarPositionX+str1.Length*8+str2.Length*8+8,clasterPositionY - (int)(indicatorModel.Claster_Height/2),indicatorModel.Claster_Width_Max,indicatorModel.Claster_Height),brush3DX);
 								}
-
 							}
 							else if(indicatorModel.Claster_Width_Max>=clasterVolume.ToString().Length*8 && indicatorModel.Claster_Height>=10)
-								RenderTarget.DrawText(clasterVolume.ToString(),Claster_textFormat,new SharpDX.RectangleF(BarPositionX, clasterPositionY - (int)(indicatorModel.Claster_Height/2), indicatorModel.Claster_Width_Max, indicatorModel.Claster_Height),Brushes.WhiteSmoke.ToDxBrush(RenderTarget));
+								RenderTarget.DrawText(clasterVolume.ToString(),Claster_textFormat,new SharpDX.RectangleF(BarPositionX, clasterPositionY - (int)(indicatorModel.Claster_Height/2), indicatorModel.Claster_Width_Max, indicatorModel.Claster_Height),brush1DX);
 						}
 					}
+					}
+					brush2DX.Dispose();
+					brush3DX.Dispose();
+					brush9DX.Dispose();
 				}
-					
 				
 				if(Input_VerticalVolume_OnOff)
 				{
-							
 					int tmp_maxVolume = MaxVV;//bars.Max(b => b.Volume_sum);
 					
+				if (tmp_maxVolume-1 != 0)												// Edited by PD
+				{	
 					int vol=bar.Volume_sum*Input_VerticalVolume_Size/tmp_maxVolume-1;
 					
 					int Y_VerticalVolume=chartScale.GetYByValue(chartScale.MinValue)-vol;
@@ -1149,21 +1087,22 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 						linearGradientBrush_VerticalVolume_Filter1.StartPoint=new SharpDX.Vector2(0, Y_VerticalVolume);
 						linearGradientBrush_VerticalVolume_Filter1.EndPoint=new SharpDX.Vector2(0, Y_VerticalVolume+vol);
 						
-						RenderTarget.FillRectangle(new SharpDX.RectangleF(BarPositionX,Y_VerticalVolume,tmp_width,vol),linearGradientBrush_VerticalVolume_Filter1);
+						RenderTarget.FillRectangle(new SharpDX.RectangleF(BarPositionX - (tmp_width/2),Y_VerticalVolume,tmp_width,vol),linearGradientBrush_VerticalVolume_Filter1);
 					}else{
 						linearGradientBrush_VerticalVolume_Standart.StartPoint=new SharpDX.Vector2(0, Y_VerticalVolume);
 						linearGradientBrush_VerticalVolume_Standart.EndPoint=new SharpDX.Vector2(0, Y_VerticalVolume+vol);
-						RenderTarget.FillRectangle(new SharpDX.RectangleF(BarPositionX,Y_VerticalVolume,tmp_width,vol),linearGradientBrush_VerticalVolume_Standart);
+						RenderTarget.FillRectangle(new SharpDX.RectangleF(BarPositionX - (tmp_width/2),Y_VerticalVolume,tmp_width,vol),linearGradientBrush_VerticalVolume_Standart);
 					}
 					
 					if(indicatorModel.Claster_Width_Max>=bar.Volume_sum.ToString().Length*8 && Input_VerticalVolumeText_OnOff)
-						RenderTarget.DrawText(bar.Volume_sum.ToString(),Claster_textFormat,new SharpDX.RectangleF(BarPositionX,Y_VerticalVolume-15,indicatorModel.Claster_Width_Max,indicatorModel.Claster_Height),Brushes.WhiteSmoke.ToDxBrush(RenderTarget));
-					
+						RenderTarget.DrawText(bar.Volume_sum.ToString(),Claster_textFormat,new SharpDX.RectangleF(BarPositionX - (tmp_width/2),Y_VerticalVolume-15,indicatorModel.Claster_Width_Max,indicatorModel.Claster_Height),brush1DX);
+				}
 				}
 				
 				if(Input_PocOnDay_OnOff)
 				{
-					if(i<indicatorModel.ListOfBar.Count-1)
+					brush4DX = Input_PocOnDay_Color.ToDxBrush(RenderTarget);
+					if(i<indicatorModel.ListOfBar.Count-1 && bar.DayPocPrice != 0 && indicatorModel.ListOfBar[i+1].DayPocPrice != 0)
 					{
 						SharpDX.Vector2 point0 = new SharpDX.Vector2();
 						SharpDX.Vector2 point1 = new SharpDX.Vector2();
@@ -1171,7 +1110,10 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 						point0.Y=chartScale.GetYByValue(bar.DayPocPrice);
 						point1.X=BarPositionX+indicatorModel.Claster_Width_Max+2;
 						point1.Y=chartScale.GetYByValue(indicatorModel.ListOfBar[i+1].DayPocPrice);
-						RenderTarget.DrawLine(point0,point1,Input_PocOnDay_Color.ToDxBrush(RenderTarget));
+						RenderTarget.DrawLine(point0,point1,brush4DX);
+						
+						//NinjaTrader.Code.Output.Process(string.Format("bar.DayPocPrice: {0}, indicatorModel.Price : {1}", bar.DayPocPrice, indicatorModel.ListOfBar[i+1].DayPocPrice), PrintTo.OutputTab1);
+						
 					}else if(flagForCurrentBar) {
 						SharpDX.Vector2 point0 = new SharpDX.Vector2();
 						SharpDX.Vector2 point1 = new SharpDX.Vector2();
@@ -1179,12 +1121,10 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 						point0.Y=chartScale.GetYByValue(indicatorModel.ListOfBar[i].DayPocPrice);
 						point1.X=BarPositionX;
 						point1.Y=chartScale.GetYByValue(bar.DayPocPrice);
-						RenderTarget.DrawLine(point0,point1,Input_PocOnDay_Color.ToDxBrush(RenderTarget));
+						RenderTarget.DrawLine(point0,point1,brush4DX);
 					}
+					if (brush4DX != null)		{	brush4DX.Dispose();	}
 				}
-				
-				
-				
 				
 				if(i==indicatorModel.ListOfBar.Count-1 && !flagForCurrentBar)
 				{
@@ -1192,23 +1132,25 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 					i-=1;
 				}
 			}
-			
+				
 			if(Input_MS_OnOff)
 			{
 				IEnumerable<Model.MarketStop> marketStops = indicatorModel.ListOfMarketStop.Where(c => c.Time>=chartControl.FirstTimePainted && c.Time<=chartControl.LastTimePainted);
+				SharpDX.Direct2D1.Brush MS_brush = Input_MS_Color.ToDxBrush(RenderTarget);
+				MS_brush.Opacity=(float)0.5;
 				foreach(Model.MarketStop MS in marketStops)
 				{
-					int MS_positionX = chartControl.GetXByBarIndex(ChartBars,(int)chartControl.GetSlotIndexByTime(MS.Time));
+					//int MS_positionX = chartControl.GetXByBarIndex(ChartBars,(int)chartControl.GetSlotIndexByTime(MS.Time));
+					int MS_positionX = chartControl.GetXByBarIndex(ChartBars, (ChartBars.GetBarIdxByTime(ChartControl, MS.Time) - 1));		//Edited by PD
 					int clasterPositionY1 = chartScale.GetYByValue(MS.Price_high)- (int)(indicatorModel.Claster_Height/2);
 					int clasterPositionY2 = chartScale.GetYByValue(MS.Price_low)+ (int)(indicatorModel.Claster_Height/2);
 					int MS_height = clasterPositionY2-clasterPositionY1;
-					SharpDX.Direct2D1.Brush MS_brush = Input_MS_Color.ToDxBrush(RenderTarget);
-					MS_brush.Opacity=(float)0.5;
+					
 					RenderTarget.FillRectangle(new SharpDX.RectangleF(MS_positionX,clasterPositionY1,indicatorModel.Claster_Width_Max*2,MS_height),MS_brush);
 					
-					RenderTarget.DrawText(MS.Volume.ToString(),Claster_textFormat,new SharpDX.RectangleF(MS_positionX+indicatorModel.Claster_Width_Max,clasterPositionY1+MS_height/2,MS.Volume.ToString().Length*8,10),Brushes.WhiteSmoke.ToDxBrush(RenderTarget));
-					
+					RenderTarget.DrawText(MS.Volume.ToString(),Claster_textFormat,new SharpDX.RectangleF(MS_positionX+indicatorModel.Claster_Width_Max,clasterPositionY1+MS_height/2,MS.Volume.ToString().Length*8,10),brush1DX);
 				}
+				MS_brush.Dispose();
 			}
 			
 			if(Input_Histogramm_OnOff)
@@ -1307,6 +1249,9 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 					foreach(KeyValuePair<double, Model.CurrentClaster> histogramm_claster in histogramm_clasters)
 					{
 						int Y_histogramm = chartScale.GetYByValue(histogramm_claster.Key)-indicatorModel.Claster_Height/2;
+						
+					if (indicatorModel.Histogramm.ListOfCurrentBar[indicatorModel.Histogramm.pocPrice].Volume_sum != 0)																		// Edited by PD
+					{	
 						int vol = histogramm_claster.Value.Volume_sum*Input_Histogramm_MaxSize/indicatorModel.Histogramm.ListOfCurrentBar[indicatorModel.Histogramm.pocPrice].Volume_sum;
 						
 						
@@ -1336,20 +1281,16 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 						}
 						
 						if(indicatorModel.Claster_Height>=10 && Input_HistogrammText_OnOff)
-							RenderTarget.DrawText(histogramm_claster.Value.Volume_sum.ToString(),Claster_textFormat,new SharpDX.RectangleF(0,Y_histogramm,histogramm_claster.Value.Volume_sum.ToString().Length*8,indicatorModel.Claster_Height),Brushes.WhiteSmoke.ToDxBrush(RenderTarget));
-					
+							RenderTarget.DrawText(histogramm_claster.Value.Volume_sum.ToString(),Claster_textFormat,new SharpDX.RectangleF(0,Y_histogramm,histogramm_claster.Value.Volume_sum.ToString().Length*8,indicatorModel.Claster_Height),brush1DX);
+					}
 					}
 					
 					linearGradientBrush_Histogramm_Standart.Dispose();
 					linearGradientBrush_Histogramm_FilterMin.Dispose();
 					linearGradientBrush_Histogramm_FilterMax.Dispose();
 					linearGradientBrush_Histogramm_MaxColor.Dispose();
-					
 				}
-				
 			
-				
-				
 			if(Input_TandS_OnOff)
 			{
 				//chartControl.Properties.BarMarginRight=Input_TandS_RightMargin;
@@ -1357,11 +1298,10 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 				SharpDX.DirectWrite.TextFormat TandS_textFormat = new SharpDX.DirectWrite.TextFormat(NinjaTrader.Core.Globals.DirectWriteFactory,"TimesNewRoman", textSize);
 				//SharpDX.Direct2D1.Brush TandSText_Color_Brush = Brushes.WhiteSmoke.ToDxBrush(RenderTarget);
 				
-				SharpDX.Direct2D1.Brush TandSText_Color_Brush_Ask = Input_TandS_Ask_Color.ToDxBrush(RenderTarget);
-				SharpDX.Direct2D1.Brush TandSText_Color_Brush_Bid = Input_TandS_Bid_Color.ToDxBrush(RenderTarget);
-				
-				SharpDX.Direct2D1.Brush TandSText_Color_Brush_FilterAsk = Input_TandS_FilterAsk_Color.ToDxBrush(RenderTarget);
-				SharpDX.Direct2D1.Brush TandSText_Color_Brush_FilterBid = Input_TandS_FilterBid_Color.ToDxBrush(RenderTarget);
+				brush5DX = Input_TandS_Ask_Color.ToDxBrush(RenderTarget);
+				brush6DX = Input_TandS_Bid_Color.ToDxBrush(RenderTarget);
+				brush7DX = Input_TandS_FilterAsk_Color.ToDxBrush(RenderTarget);
+				brush8DX = Input_TandS_FilterBid_Color.ToDxBrush(RenderTarget);
 				
 				int i_tmp=0;
 				if(Input_OnlyFilterShow)
@@ -1371,12 +1311,12 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 						i_tmp++;
 						if(indicatorModel.TandS_FilterPrints_volume[i]>0){
 							string str_tmp_ask=indicatorModel.TandS_FilterPrints_volume[i]+"@"+indicatorModel.TandS_FilterPrints_price[i];
-							RenderTarget.DrawText(str_tmp_ask,TandS_textFormat,new SharpDX.RectangleF(ChartPanel.W-Input_TandS_RightPosition,Input_TandS_TopPosition+i_tmp*(textSize),str_tmp_ask.ToString().Length*(float)(textSize*0.8),textSize),TandSText_Color_Brush_FilterAsk);
+							RenderTarget.DrawText(str_tmp_ask,TandS_textFormat,new SharpDX.RectangleF(ChartPanel.W-Input_TandS_RightPosition,Input_TandS_TopPosition+i_tmp*(textSize),str_tmp_ask.ToString().Length*(float)(textSize*0.8),textSize),brush7DX);
 						}
 						else
 						{
 							string str_tmp_bid=(indicatorModel.TandS_FilterPrints_volume[i]*(-1)).ToString()+"@"+indicatorModel.TandS_FilterPrints_price[i];
-							RenderTarget.DrawText(str_tmp_bid,TandS_textFormat,new SharpDX.RectangleF(ChartPanel.W-Input_TandS_RightPosition,Input_TandS_TopPosition+i_tmp*(textSize),str_tmp_bid.ToString().Length*(float)(textSize*0.8),textSize),TandSText_Color_Brush_FilterBid);
+							RenderTarget.DrawText(str_tmp_bid,TandS_textFormat,new SharpDX.RectangleF(ChartPanel.W-Input_TandS_RightPosition,Input_TandS_TopPosition+i_tmp*(textSize),str_tmp_bid.ToString().Length*(float)(textSize*0.8),textSize),brush8DX);
 						}
 					}
 				}
@@ -1389,19 +1329,19 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 						
 							string str_tmp_ask=indicatorModel.TandS_AllPrints_volume[i]+"@"+indicatorModel.TandS_AllPrints_price[i];
 							if(indicatorModel.TandS_AllPrints_volume[i]>=Input_TandS_FilterAsk)
-								RenderTarget.DrawText(str_tmp_ask,TandS_textFormat,new SharpDX.RectangleF(ChartPanel.W-Input_TandS_RightPosition,Input_TandS_TopPosition+i_tmp*(textSize),str_tmp_ask.ToString().Length*(float)(textSize*0.8),textSize),TandSText_Color_Brush_FilterAsk);
+								RenderTarget.DrawText(str_tmp_ask,TandS_textFormat,new SharpDX.RectangleF(ChartPanel.W-Input_TandS_RightPosition,Input_TandS_TopPosition+i_tmp*(textSize),str_tmp_ask.ToString().Length*(float)(textSize*0.8),textSize),brush7DX);
 							else
 								//RenderTarget.FillRectangle(new RectangleF(ChartPanel.W-Input_TandS_RightPosition,50+i*(textSize),str_tmp_ask.ToString().Length*(float)(textSize*0.6),textSize),TandSText_Color_Brush_FilterAsk);
-							RenderTarget.DrawText(str_tmp_ask,TandS_textFormat,new SharpDX.RectangleF(ChartPanel.W-Input_TandS_RightPosition,Input_TandS_TopPosition+i_tmp*(textSize),str_tmp_ask.ToString().Length*(float)(textSize*0.8),textSize),TandSText_Color_Brush_Ask);
+							RenderTarget.DrawText(str_tmp_ask,TandS_textFormat,new SharpDX.RectangleF(ChartPanel.W-Input_TandS_RightPosition,Input_TandS_TopPosition+i_tmp*(textSize),str_tmp_ask.ToString().Length*(float)(textSize*0.8),textSize),brush5DX);
 						}
 						else
 						{
 							string str_tmp_bid=(indicatorModel.TandS_AllPrints_volume[i]*(-1)).ToString()+"@"+indicatorModel.TandS_AllPrints_price[i];
 							if(Math.Abs(indicatorModel.TandS_AllPrints_volume[i])>=Input_TandS_FilterBid)
-								RenderTarget.DrawText(str_tmp_bid,TandS_textFormat,new SharpDX.RectangleF(ChartPanel.W-Input_TandS_RightPosition,Input_TandS_TopPosition+i_tmp*(textSize),str_tmp_bid.ToString().Length*(float)(textSize*0.8),textSize),TandSText_Color_Brush_FilterBid);
+								RenderTarget.DrawText(str_tmp_bid,TandS_textFormat,new SharpDX.RectangleF(ChartPanel.W-Input_TandS_RightPosition,Input_TandS_TopPosition+i_tmp*(textSize),str_tmp_bid.ToString().Length*(float)(textSize*0.8),textSize),brush8DX);
 							else
 								//RenderTarget.FillRectangle(new RectangleF(ChartPanel.W-Input_TandS_RightPosition,50+i*(textSize),str_tmp_bid.ToString().Length*(float)(textSize*0.6),textSize),TandSText_Color_Brush_FilterBid);
-							RenderTarget.DrawText(str_tmp_bid,TandS_textFormat,new SharpDX.RectangleF(ChartPanel.W-Input_TandS_RightPosition,Input_TandS_TopPosition+i_tmp*(textSize),str_tmp_bid.ToString().Length*(float)(textSize*0.8),textSize),TandSText_Color_Brush_Bid);
+							RenderTarget.DrawText(str_tmp_bid,TandS_textFormat,new SharpDX.RectangleF(ChartPanel.W-Input_TandS_RightPosition,Input_TandS_TopPosition+i_tmp*(textSize),str_tmp_bid.ToString().Length*(float)(textSize*0.8),textSize),brush6DX);
 						}
 					}
 				}
@@ -1417,52 +1357,73 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 						int BP_Y =chartScale.GetYByValue(indicatorModel.TandS_FilterPrints_price[i]);
 						if(indicatorModel.TandS_FilterPrints_volume[i]>0)
 						{
-							TandSText_Color_Brush_FilterAsk.Opacity=(float)0.7;
-							RenderTarget.FillEllipse(new  SharpDX.Direct2D1.Ellipse(new SharpDX.Vector2(BP_X,BP_Y),3,3),TandSText_Color_Brush_FilterAsk);
+							brush7DX.Opacity=(float)0.7;
+							RenderTarget.FillEllipse(new  SharpDX.Direct2D1.Ellipse(new SharpDX.Vector2(BP_X,BP_Y),3,3),brush7DX);
 						}
 						else
 						{
-							TandSText_Color_Brush_FilterBid.Opacity=(float)0.7;
-							RenderTarget.FillEllipse(new  SharpDX.Direct2D1.Ellipse(new SharpDX.Vector2(BP_X,BP_Y),3,3),TandSText_Color_Brush_FilterBid);
+							brush8DX.Opacity=(float)0.7;
+							RenderTarget.FillEllipse(new  SharpDX.Direct2D1.Ellipse(new SharpDX.Vector2(BP_X,BP_Y),3,3),brush8DX);
 						}
 					}
 				}
-				
-				
+				if (brush5DX != null)		{	brush5DX.Dispose();	}
+				if (brush6DX != null)		{	brush6DX.Dispose();	}
+				if (brush7DX != null)		{	brush7DX.Dispose();	}
+				if (brush8DX != null)		{	brush8DX.Dispose();	}
+				TandS_textFormat.Dispose();
 			}
-			
-			
-			
-			
-			
 			isFirstDraw = false;
 			
-			/*stopWatch.Stop();
-	        // Get the elapsed time as a TimeSpan value.
-	        TimeSpan ts = stopWatch.Elapsed;
-			Print(ts);*/
-			
-			
-				
 			Claster_textFormat.Dispose();
 			linearGradientBrush_VerticalVolume_Standart.Dispose();
 			linearGradientBrush_VerticalVolume_Filter1.Dispose();
-		
+			if (brush1DX != null)		{	brush1DX.Dispose();	}
+			
+			//stopWatch.Stop();
+			//Print("Время вывода: " + stopWatch.Elapsed.TotalMilliseconds.ToString());
+          	//stopWatch.Reset();
+			
+			}
+            catch (Exception ex) { Print("MRPack OnRender 1385: " + ex); }
 		}
 		
 		
+		
+		
+		
+		public override void OnRenderTargetChanged()
+		{
+			if (Claster_ColorDX != null)
+  			{
+    			Claster_ColorDX.Dispose();
+  			}
+			
+			if (Claster_FilterMin_ColorDX != null)
+  			{
+    			Claster_FilterMin_ColorDX.Dispose();
+  			}
+			
+			if (Claster_FilterMax_ColorDX != null)
+  			{
+    			Claster_FilterMax_ColorDX.Dispose();
+  			}
+			
+			if (RenderTarget != null)
+			{
+				Claster_ColorDX = Claster_Color.ToDxBrush(RenderTarget);
+				Claster_FilterMin_ColorDX = Claster_FilterMin_Color.ToDxBrush(RenderTarget);
+				Claster_FilterMax_ColorDX = Claster_FilterMax_Color.ToDxBrush(RenderTarget);
+				Input_ClasterMax_ColorDX = Input_ClasterMax_Color.ToDxBrush(RenderTarget);
+			}
+		}
+			
 		
 		#region Properties
 		
 			#region Claster
 		
-				[Gui.PropertyEditor("NinjaTrader.Gui.Tools.FilePathPicker", Filter="Any Files | *.txt")]
-				[Display(ResourceType = typeof(Custom.Resource), Name = "Key File", Order = 1, GroupName = "Cluster")]
-				[Browsable(true)]
-				public string AnyFile0
-				{
-					get; set;
-				}
+				
 		
 		
 				[XmlIgnore]
@@ -1755,8 +1716,23 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 		#endregion
 			
 		#region Profile Range Input
+			[Display(Name="Text On/Off", Description="", Order=1, GroupName="Range Profile")]
+			public bool Range_Profile_Text_OnOff
+			{ get; set; }
+			
 			[XmlIgnore]
-			[Display(ResourceType = typeof(Custom.Resource), Name = "Inside Color", Order = 1, GroupName = "Range Profile")]
+			[Display(ResourceType = typeof(Custom.Resource), Name = "Text Color", Order = 2, GroupName = "Range Profile")]
+			public Brush Range_Profile_Text_Color
+			{ get; set; }
+			[Browsable(false)]
+			public string Range_Profile_Text_ColorSerialize
+			{
+				get { return Serialize.BrushToString(Range_Profile_Text_Color); }
+				set { Range_Profile_Text_Color = Serialize.StringToBrush(value); }
+			}
+			
+			[XmlIgnore]
+			[Display(ResourceType = typeof(Custom.Resource), Name = "Inside Color", Order = 3, GroupName = "Range Profile")]
 			public Brush Input_ProfileRange_Inside_Color
 			{ get; set; }
 			[Browsable(false)]
@@ -1767,7 +1743,7 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 			}
 			
 			[XmlIgnore]
-			[Display(ResourceType = typeof(Custom.Resource), Name = "POC Color", Order = 2, GroupName = "Range Profile")]
+			[Display(ResourceType = typeof(Custom.Resource), Name = "POC Color", Order = 4, GroupName = "Range Profile")]
 			public Brush Input_ProfileRange_POC_Color
 			{ get; set; }
 			[Browsable(false)]
@@ -1778,7 +1754,7 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 			}
 			
 			[XmlIgnore]
-			[Display(ResourceType = typeof(Custom.Resource), Name = "Border Color", Order = 3, GroupName = "Range Profile")]
+			[Display(ResourceType = typeof(Custom.Resource), Name = "Border Color", Order = 5, GroupName = "Range Profile")]
 			public Brush Input_ProfileRange_Border_Color
 			{ get; set; }
 			[Browsable(false)]
@@ -1788,6 +1764,37 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 				set { Input_ProfileRange_Border_Color = Serialize.StringToBrush(value); }
 			}
 			
+			[XmlIgnore]
+			[Display(ResourceType = typeof(Custom.Resource), Name = "Inside Bid Color", Order = 6, GroupName = "Range Profile")]
+			public Brush Input_ProfileRange_Inside_Bid_Color
+			{ get; set; }
+			[Browsable(false)]
+			public string Input_ProfileRange_Inside_Bid_ColorSerialize
+			{
+				get { return Serialize.BrushToString(Input_ProfileRange_Inside_Bid_Color); }
+				set { Input_ProfileRange_Inside_Bid_Color = Serialize.StringToBrush(value); }
+			}
+			
+			[XmlIgnore]
+			[Display(ResourceType = typeof(Custom.Resource), Name = "Inside Ask Color", Order = 7, GroupName = "Range Profile")]
+			public Brush Input_ProfileRange_Inside_Ask_Color
+			{ get; set; }
+			[Browsable(false)]
+			public string Input_ProfileRange_Inside_Ask_ColorSerialize
+			{
+				get { return Serialize.BrushToString(Input_ProfileRange_Inside_Ask_Color); }
+				set { Input_ProfileRange_Inside_Ask_Color = Serialize.StringToBrush(value); }
+			}
+			
+			[Range(1, 100)]
+				[Display(Name="Text Opacity", Description="", Order=8, GroupName="Range Profile")]
+				public int Profile_Text_Opacity
+				{ get; set; }
+			
+			[Range(1, 100)]
+			[Display(Name="Profile Opacity", Description="", Order=9, GroupName="Range Profile")]
+			public int Profile_Opacity
+			{ get; set; }
 			/*[Display(Name="Bid/Ask On/Off", Description="", Order=4, GroupName="Range Profile")]
 			public bool Input_RangeProfile_BidAsk_OnOff
 			{ get; set; }
@@ -2031,18 +2038,18 @@ namespace NinjaTrader.NinjaScript.Indicators
 	public partial class Indicator : NinjaTrader.Gui.NinjaScript.IndicatorRenderBase
 	{
 		private MRPack.MRIndicator[] cacheMRIndicator;
-		public MRPack.MRIndicator MRIndicator(int textSize, int textOpacity)
+		public MRPack.MRIndicator MRIndicator()
 		{
-			return MRIndicator(Input, textSize, textOpacity);
+			return MRIndicator(Input);
 		}
 
-		public MRPack.MRIndicator MRIndicator(ISeries<double> input, int textSize, int textOpacity)
+		public MRPack.MRIndicator MRIndicator(ISeries<double> input)
 		{
 			if (cacheMRIndicator != null)
 				for (int idx = 0; idx < cacheMRIndicator.Length; idx++)
-					if (cacheMRIndicator[idx] != null && cacheMRIndicator[idx].TextSize == textSize && cacheMRIndicator[idx].TextOpacity == textOpacity && cacheMRIndicator[idx].EqualsInput(input))
+					if (cacheMRIndicator[idx] != null &&  cacheMRIndicator[idx].EqualsInput(input))
 						return cacheMRIndicator[idx];
-			return CacheIndicator<MRPack.MRIndicator>(new MRPack.MRIndicator(){ TextSize = textSize, TextOpacity = textOpacity }, input, ref cacheMRIndicator);
+			return CacheIndicator<MRPack.MRIndicator>(new MRPack.MRIndicator(), input, ref cacheMRIndicator);
 		}
 	}
 }
@@ -2051,14 +2058,14 @@ namespace NinjaTrader.NinjaScript.MarketAnalyzerColumns
 {
 	public partial class MarketAnalyzerColumn : MarketAnalyzerColumnBase
 	{
-		public Indicators.MRPack.MRIndicator MRIndicator(int textSize, int textOpacity)
+		public Indicators.MRPack.MRIndicator MRIndicator()
 		{
-			return indicator.MRIndicator(Input, textSize, textOpacity);
+			return indicator.MRIndicator(Input);
 		}
 
-		public Indicators.MRPack.MRIndicator MRIndicator(ISeries<double> input , int textSize, int textOpacity)
+		public Indicators.MRPack.MRIndicator MRIndicator(ISeries<double> input )
 		{
-			return indicator.MRIndicator(input, textSize, textOpacity);
+			return indicator.MRIndicator(input);
 		}
 	}
 }
@@ -2067,14 +2074,14 @@ namespace NinjaTrader.NinjaScript.Strategies
 {
 	public partial class Strategy : NinjaTrader.Gui.NinjaScript.StrategyRenderBase
 	{
-		public Indicators.MRPack.MRIndicator MRIndicator(int textSize, int textOpacity)
+		public Indicators.MRPack.MRIndicator MRIndicator()
 		{
-			return indicator.MRIndicator(Input, textSize, textOpacity);
+			return indicator.MRIndicator(Input);
 		}
 
-		public Indicators.MRPack.MRIndicator MRIndicator(ISeries<double> input , int textSize, int textOpacity)
+		public Indicators.MRPack.MRIndicator MRIndicator(ISeries<double> input )
 		{
-			return indicator.MRIndicator(input, textSize, textOpacity);
+			return indicator.MRIndicator(input);
 		}
 	}
 }

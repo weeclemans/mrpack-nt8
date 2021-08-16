@@ -93,13 +93,17 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 		
 		
 		
-		
+		public bool Range_Profile_Text_OnOff;	// Edited by PD
+		public Brush Range_Profile_Text_Color;	// Edited by PD
 		public Brush Input_ProfileRange_Inside_Color;
 		public Brush Input_ProfileRange_POC_Color;
 		public bool Input_RangeProfile_BidAsk_OnOff;
 		public bool Input_RangeProfile_ExtendedLine_OnOff;
 		public Brush Input_ProfileRange_Border_Color;
-		
+		public Brush Input_ProfileRange_Inside_Bid_Color;
+		public Brush Input_ProfileRange_Inside_Ask_Color;
+		public int Profile_Text_Opacity;
+		public int Profile_Opacity;
 		
 		public Model()
 		{}
@@ -675,40 +679,4 @@ namespace NinjaTrader.NinjaScript.Indicators.MRPack
 		NONE
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

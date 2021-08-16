@@ -12,12 +12,16 @@ using NinjaTrader.Gui;
 using NinjaTrader.Gui.Chart;
 using NinjaTrader.Core.FloatingPoint;
 
+using System.ComponentModel;
+
 using NinjaTrader.NinjaScript.Indicators.MRPack;
 #endregion
 
 //This namespace holds Drawing tools in this folder and is required. Do not change it. 
 namespace NinjaTrader.NinjaScript.DrawingTools
 {
+	//[CLSCompliant(false)]
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class RangeProfile2 : DrawingTool
 	{
         private	const double	cursorSensitivity		= 5;
@@ -28,7 +32,19 @@ namespace NinjaTrader.NinjaScript.DrawingTools
 		public int ProfileType;
 		
 		public bool ExtendedLine;
-
+		
+		SharpDX.Direct2D1.Brush brush0DX;
+		SharpDX.Direct2D1.Brush brush1DX;
+		SharpDX.Direct2D1.Brush brush2DX;
+		SharpDX.Direct2D1.Brush brush3DX;
+		SharpDX.Direct2D1.Brush brush4DX;
+		SharpDX.Direct2D1.Brush brush5DX;
+		SharpDX.Direct2D1.Brush brush6DX;
+		SharpDX.Direct2D1.Brush brush7DX;
+		SharpDX.Direct2D1.Brush brush8DX;
+		SharpDX.Direct2D1.Brush brush9DX;
+		SharpDX.Direct2D1.Brush brush10DX;
+		
 		public override IEnumerable<ChartAnchor> Anchors { get { return new[] { StartAnchor, EndAnchor }; } }
 
 		[Display(Order = 2)]
@@ -46,7 +62,7 @@ namespace NinjaTrader.NinjaScript.DrawingTools
 		{
 			yield return new AlertConditionItem 
 			{
-				Name                    = "CustomLine",
+				Name                    = "RP2CustomLine",
 				ShouldOnlyDisplayName   = true,
 			};
 		}
@@ -337,9 +353,6 @@ namespace NinjaTrader.NinjaScript.DrawingTools
 			/*Point point1 = dataPoint.GetPoint(chartControl, chartPanel, chartScale);
 			
 			*/
-				
-					
-			
 		}
 		
 		public override void OnMouseMove(ChartControl chartControl, ChartPanel chartPanel, ChartScale chartScale, ChartAnchor dataPoint)
@@ -383,12 +396,11 @@ namespace NinjaTrader.NinjaScript.DrawingTools
 
 		public override void OnRender(ChartControl chartControl, ChartScale chartScale)
 		{
-			/*if (LineStroke == null)
-				return;*/
-
-			//LineStroke.RenderTarget			= RenderTarget;
-
-			// first of all, turn on anti-aliasing to smooth out our line
+		try
+		{
+		if (model != null)
+		{
+			SharpDX.Direct2D1.AntialiasMode oldAntialiasMode = RenderTarget.AntialiasMode;
 			RenderTarget.AntialiasMode	= SharpDX.Direct2D1.AntialiasMode.PerPrimitive;
 
 			ChartPanel	panel			= chartControl.ChartPanels[chartScale.PanelIndex];
@@ -406,23 +418,42 @@ namespace NinjaTrader.NinjaScript.DrawingTools
 			Point					endPointAdjusted	= endPoint + pixelAdjustVec;
 			SharpDX.Vector2			startVec			= startPointAdjusted.ToVector2();
 			SharpDX.Vector2			endVec				= endPointAdjusted.ToVector2();
-			SharpDX.Direct2D1.Brush	tmpBrush			= chartControl.SelectionBrush;
-
+			//SharpDX.Direct2D1.Brush	tmpBrush			= chartControl.SelectionBrush;
 			SharpDX.Vector2 tmpVect = startVec- endVec;
 			
+			brush0DX = new SharpDX.Direct2D1.SolidColorBrush(RenderTarget, SharpDX.Color.Black);
+			brush0DX.Opacity = (float)0.01;
+			brush1DX = model.Input_ProfileRange_Border_Color.ToDxBrush(RenderTarget);
+			brush2DX = model.Input_ProfileRange_Inside_Color.ToDxBrush(RenderTarget);
+			brush2DX.Opacity = model.Profile_Opacity / (float)100d;
+			brush3DX = model.Input_ProfileRange_POC_Color.ToDxBrush(RenderTarget);
+			brush3DX.Opacity = model.Profile_Opacity / (float)100d;
+			brush4DX = model.Range_Profile_Text_Color.ToDxBrush(RenderTarget);
+			brush4DX.Opacity = model.Profile_Text_Opacity / (float)100d;
+			brush5DX = model.Input_ProfileRange_Inside_Bid_Color.ToDxBrush(RenderTarget);
+			brush5DX.Opacity = model.Profile_Opacity / (float)100d;
+			brush6DX = model.Input_ProfileRange_Inside_Ask_Color.ToDxBrush(RenderTarget);
+			brush6DX.Opacity = model.Profile_Opacity / (float)100d;
+			brush7DX = new SharpDX.Direct2D1.SolidColorBrush(RenderTarget, SharpDX.Color.WhiteSmoke);
+			brush8DX = new SharpDX.Direct2D1.SolidColorBrush(RenderTarget, SharpDX.Color.Gray);
+			brush9DX = new SharpDX.Direct2D1.SolidColorBrush(RenderTarget, SharpDX.Color.Gray);
+			brush9DX.Opacity = (float)0.5;
+			brush10DX = model.Input_ProfileRange_POC_Color.ToDxBrush(RenderTarget);
+			brush10DX.Opacity = model.Profile_Text_Opacity / (float)100d;
             // if a plain ol' line, then we're all done
             // if we're an arrow line, make sure to draw the actual line. for extended lines, only a single
             // line to extended points is drawn below, to avoid unneeded multiple DrawLine calls
             //RenderTarget.DrawLine(startVec, endVec, model.Input_ProfileRange_Inside_Color.ToDxBrush(RenderTarget), 2);
 			
-			RenderTarget.DrawRectangle(new SharpDX.RectangleF(endVec.X, endVec.Y, tmpVect.X, tmpVect.Y),model.Input_ProfileRange_Border_Color.ToDxBrush(RenderTarget),(float)1);
-			SharpDX.Direct2D1.Brush brush1 = Brushes.Black.ToDxBrush(RenderTarget);
-			brush1.Opacity = (float)0.01;
-			RenderTarget.FillRectangle(new SharpDX.RectangleF(endVec.X, endVec.Y, tmpVect.X, tmpVect.Y),brush1);
+			RenderTarget.DrawRectangle(new SharpDX.RectangleF(endVec.X, endVec.Y, tmpVect.X, tmpVect.Y), brush1DX,(float)1);
+			RenderTarget.FillRectangle(new SharpDX.RectangleF(endVec.X, endVec.Y, tmpVect.X, tmpVect.Y),brush0DX);
 			
-			int firstindex = ((int)model.parent.ChartControl.GetSlotIndexByTime(StartAnchor.Time));
-			int lastIndex = ((int)model.parent.ChartControl.GetSlotIndexByTime(EndAnchor.Time));
-			
+			//int firstindex = ((int)model.parent.ChartControl.GetSlotIndexByTime(StartAnchor.Time));
+			//int lastIndex = ((int)model.parent.ChartControl.GetSlotIndexByTime(EndAnchor.Time));
+			int firstindex = model.parent.ChartBars.GetBarIdxByTime(chartControl, StartAnchor.Time);		//Edited by PD
+			int lastIndex = model.parent.ChartBars.GetBarIdxByTime(chartControl, EndAnchor.Time);		//Edited by PD
+			Model.HistogrammClass profile = new Model.HistogrammClass();
+			int count=0;
 			
 			IEnumerable<Model.Bar> bars;
 			if(firstindex<=lastIndex)
@@ -445,11 +476,6 @@ namespace NinjaTrader.NinjaScript.DrawingTools
 			else
 				topPosition=(int)endVec.Y;
 			
-			
-			Model.HistogrammClass profile = new Model.HistogrammClass();
-			
-			int count=0;
-			
 			foreach(Model.Bar bar in bars)
 			{
 				IEnumerable<KeyValuePair<double, Model.Claster>> clasters;
@@ -464,11 +490,13 @@ namespace NinjaTrader.NinjaScript.DrawingTools
 					profile.AddPrintToHistogramm(claster.Key,claster.Value.Volume_Bid_sum,PrintType.BID);
 				}
 			}
+			
 			//textToRender+=" : "+profile.ListOfCurrentBar.Count.ToString();
 			Dictionary<double, int> deltaProfile = new Dictionary<double, int>();
 			double maxDeltaPrice = int.MinValue;
 			int prevdelta =0;
 			int volumeSum=0;
+			
 			foreach(KeyValuePair<double, Model.CurrentClaster> claster in profile.ListOfCurrentBar)
 			{
 				volumeSum+=claster.Value.Volume_sum;
@@ -481,79 +509,79 @@ namespace NinjaTrader.NinjaScript.DrawingTools
 				}
 			}
 			
-		
-			
-			SharpDX.Direct2D1.Brush profile_Claster_Color = model.Input_ProfileRange_Inside_Color.ToDxBrush(RenderTarget);
-			profile_Claster_Color.Opacity = (float)0.5;
-			
 			SharpDX.DirectWrite.TextFormat Claster_textFormat = chartControl.Properties.LabelFont.ToDirectWriteTextFormat();
+			Claster_textFormat.ParagraphAlignment = SharpDX.DirectWrite.ParagraphAlignment.Center;
+			int vol1 = ProfileType != 1 ? (int)Math.Abs(tmpVect.X) : (int)Math.Abs(tmpVect.X / 2);
 			
-			
-			
-			
-			
+			float fontSize1 = Math.Max(7, Math.Min(vol1/2, Math.Min(14, model.Claster_Height - 1)));
+			SharpDX.DirectWrite.TextFormat Claster_textFormatEach = new SharpDX.DirectWrite.TextFormat(Core.Globals.DirectWriteFactory, "Arial", SharpDX.DirectWrite.FontWeight.Normal, SharpDX.DirectWrite.FontStyle.Normal, fontSize1);
+			Claster_textFormatEach.TextAlignment = SharpDX.DirectWrite.TextAlignment.Leading;
+			Claster_textFormatEach.ParagraphAlignment = SharpDX.DirectWrite.ParagraphAlignment.Center;
+			Claster_textFormatEach.WordWrapping = SharpDX.DirectWrite.WordWrapping.NoWrap;
 			
 			if(ProfileType==1 || ProfileType==0)
 			foreach(KeyValuePair<double, Model.CurrentClaster> claster in profile.ListOfCurrentBar)
 			{
 				int Y_histogramm = chartScale.GetYByValue(claster.Key)-model.Claster_Height/2;
+				
 				int vol = claster.Value.Volume_sum*(int)Math.Abs(tmpVect.X)/profile.ListOfCurrentBar[profile.pocPrice].Volume_sum;
 				
 				if(ProfileType==0)
 				{
 					if(claster.Key==profile.pocPrice)
 					{
-						SharpDX.Direct2D1.Brush profile_Claster_ColorPOC = model.Input_ProfileRange_POC_Color.ToDxBrush(RenderTarget);
-						profile_Claster_ColorPOC.Opacity = (float)0.5;
 						if(ExtendedLine)
-							vol = (int)ChartPanel.MaxWidth-Math.Abs(leftPosition);
-						RenderTarget.FillRectangle(new SharpDX.RectangleF(leftPosition,Y_histogramm,vol,model.Claster_Height),profile_Claster_ColorPOC);
+						vol = (int)ChartPanel.MaxWidth-Math.Abs(leftPosition);
+						RenderTarget.FillRectangle(new SharpDX.RectangleF(leftPosition,Y_histogramm,vol,model.Claster_Height),brush3DX);
+						
+						int text_Y = chartScale.GetYByValue(profile.pocPrice)-model.Claster_Height/2;
+						int text_width = profile.pocPrice.ToString().Length*7;
+						RenderTarget.DrawText(profile.pocPrice.ToString(),Claster_textFormat,
+						new SharpDX.RectangleF(leftPosition-text_width, text_Y,text_width ,model.Claster_Height),brush10DX);
+					
+					//RenderTarget.DrawRectangle(new SharpDX.RectangleF(leftPosition-text_width, text_Y,text_width ,model.Claster_Height), Brushes.Red.ToDxBrush(RenderTarget), 1f); //
 					}
 					else
-						RenderTarget.FillRectangle(new SharpDX.RectangleF(leftPosition,Y_histogramm,vol,model.Claster_Height),profile_Claster_Color);
+						RenderTarget.FillRectangle(new SharpDX.RectangleF(leftPosition,Y_histogramm,vol,model.Claster_Height),brush2DX);
 					
-					int text_Y = chartScale.GetYByValue(profile.pocPrice)-model.Claster_Height/2;
-					int text_width = profile.pocPrice.ToString().Length*7;
-					RenderTarget.DrawText(profile.pocPrice.ToString(),Claster_textFormat,new SharpDX.RectangleF(leftPosition-text_width, text_Y,text_width ,10),model.Input_ProfileRange_POC_Color.ToDxBrush(RenderTarget));
-			
+					if (model.Range_Profile_Text_OnOff && vol1 > 10 && model.Claster_Height > 5)
+					{
+						SharpDX.RectangleF rectText = new SharpDX.RectangleF(leftPosition + 2, Y_histogramm,vol1,model.Claster_Height);
+						//RenderTarget.DrawRectangle(rectText, model.Range_Profile_Text_Color.ToDxBrush(RenderTarget), 1f);
+						RenderTarget.DrawText(claster.Value.Volume_sum.ToString(), Claster_textFormatEach, rectText, brush4DX);
+					}
 				}
 				if(ProfileType==1)
 				{
-					SharpDX.Direct2D1.Brush profile_Claster_ColorBID = Brushes.Red.ToDxBrush(RenderTarget);
-					profile_Claster_ColorBID.Opacity = (float)0.5;
-					SharpDX.Direct2D1.Brush profile_Claster_ColorASK = Brushes.Green.ToDxBrush(RenderTarget);
-					profile_Claster_ColorASK.Opacity = (float)0.5;
-					
 					int vol_bid = claster.Value.Volume_Bid_sum*vol/claster.Value.Volume_sum;
-					RenderTarget.FillRectangle(new SharpDX.RectangleF(leftPosition,Y_histogramm,vol_bid,model.Claster_Height),profile_Claster_ColorBID);
-					RenderTarget.FillRectangle(new SharpDX.RectangleF(leftPosition+vol_bid,Y_histogramm,vol-vol_bid,model.Claster_Height),profile_Claster_ColorASK);
+					RenderTarget.FillRectangle(new SharpDX.RectangleF(leftPosition,Y_histogramm,vol_bid,model.Claster_Height),brush5DX);
+					RenderTarget.FillRectangle(new SharpDX.RectangleF(leftPosition+vol_bid,Y_histogramm,vol-vol_bid,model.Claster_Height),brush6DX);
 					
 					if(claster.Key==profile.pocPrice && ExtendedLine)
 					{
-						SharpDX.Direct2D1.Brush profile_Claster_ColorPOC = model.Input_ProfileRange_POC_Color.ToDxBrush(RenderTarget);
-						profile_Claster_ColorPOC.Opacity = (float)0.5;
-						RenderTarget.FillRectangle(new SharpDX.RectangleF(leftPosition+vol,Y_histogramm,(int)ChartPanel.MaxWidth-Math.Abs(leftPosition+vol),model.Claster_Height),profile_Claster_ColorPOC);
+						RenderTarget.FillRectangle(new SharpDX.RectangleF(leftPosition+vol,Y_histogramm,(int)ChartPanel.MaxWidth-Math.Abs(leftPosition+vol),model.Claster_Height),brush3DX);
 					}
-					
-					
-					int text_Y = chartScale.GetYByValue(profile.pocPrice)-model.Claster_Height/2;
-					int text_width = profile.pocPrice.ToString().Length*7;
-					RenderTarget.DrawText(profile.pocPrice.ToString(),Claster_textFormat,new SharpDX.RectangleF(leftPosition-text_width, text_Y,text_width ,10),model.Input_ProfileRange_POC_Color.ToDxBrush(RenderTarget));
-			
+					if(claster.Key==profile.pocPrice)
+					{
+						int text_Y = chartScale.GetYByValue(profile.pocPrice)-model.Claster_Height/2;
+						int text_width = profile.pocPrice.ToString().Length*7;
+						RenderTarget.DrawText(profile.pocPrice.ToString(),Claster_textFormat,
+						new SharpDX.RectangleF(leftPosition-text_width, text_Y,text_width ,model.Claster_Height),brush10DX);
+						//RenderTarget.DrawRectangle(new SharpDX.RectangleF(leftPosition-text_width, text_Y,text_width ,model.Claster_Height), Brushes.Red.ToDxBrush(RenderTarget), 1f);
+					}
+					if (model.Range_Profile_Text_OnOff && vol1 > 10 && model.Claster_Height > 5)
+					{
+						SharpDX.RectangleF rectText = new SharpDX.RectangleF(leftPosition + 2, Y_histogramm,vol1,model.Claster_Height);
+						//RenderTarget.DrawRectangle(rectText, model.Range_Profile_Text_Color.ToDxBrush(RenderTarget), 1f);
+						RenderTarget.DrawText(claster.Value.Volume_Bid_sum.ToString() + " x " + claster.Value.Volume_Ask_sum.ToString(), Claster_textFormatEach, rectText, brush4DX);
+					}
 				}
-				
 			}
-			
 			if(ProfileType==2)
 			{
-				
 				foreach(KeyValuePair<double, int> claster in deltaProfile)
 				{
 					int Y_histogramm = chartScale.GetYByValue(claster.Key)-model.Claster_Height/2;
-					SharpDX.Direct2D1.Brush profile_Claster_ColorBID = Brushes.Red.ToDxBrush(RenderTarget);
-					profile_Claster_ColorBID.Opacity = (float)0.5;
-					SharpDX.Direct2D1.Brush profile_Claster_ColorASK = Brushes.Green.ToDxBrush(RenderTarget);
-					profile_Claster_ColorASK.Opacity = (float)0.5;
 					
 					int vol_delta =claster.Value*(int)Math.Abs(tmpVect.X)/(int)prevdelta;
 					
@@ -561,42 +589,41 @@ namespace NinjaTrader.NinjaScript.DrawingTools
 						vol_delta=0;
 					else if(profile.ListOfCurrentBar[claster.Key].Volume_Bid_sum>profile.ListOfCurrentBar[claster.Key].Volume_Ask_sum)
 					{
-						RenderTarget.FillRectangle(new SharpDX.RectangleF(leftPosition,Y_histogramm,vol_delta,model.Claster_Height),profile_Claster_ColorBID);
+						RenderTarget.FillRectangle(new SharpDX.RectangleF(leftPosition,Y_histogramm,vol_delta,model.Claster_Height),brush5DX);
 					}
 					else if(profile.ListOfCurrentBar[claster.Key].Volume_Bid_sum<profile.ListOfCurrentBar[claster.Key].Volume_Ask_sum)
 					{
-						RenderTarget.FillRectangle(new SharpDX.RectangleF(leftPosition,Y_histogramm,vol_delta,model.Claster_Height),profile_Claster_ColorASK);
-					}		
+						RenderTarget.FillRectangle(new SharpDX.RectangleF(leftPosition,Y_histogramm,vol_delta,model.Claster_Height),brush6DX);
+					}
+					
+					if (model.Range_Profile_Text_OnOff && vol1 > 10 && model.Claster_Height > 5)
+					{
+						SharpDX.RectangleF rectText = new SharpDX.RectangleF(leftPosition + 2, Y_histogramm,vol1,model.Claster_Height);
+						//RenderTarget.DrawRectangle(rectText, model.Range_Profile_Text_Color.ToDxBrush(RenderTarget), 1f);
+						RenderTarget.DrawText((profile.ListOfCurrentBar[claster.Key].Volume_Ask_sum-profile.ListOfCurrentBar[claster.Key].Volume_Bid_sum).ToString(), 
+						Claster_textFormatEach, rectText, brush4DX);
+					}
 				}
-				
 				int text_Y = chartScale.GetYByValue(maxDeltaPrice)-model.Claster_Height/2;
 				int text_width = maxDeltaPrice.ToString().Length*7;
-				RenderTarget.DrawText(maxDeltaPrice.ToString(),Claster_textFormat,new SharpDX.RectangleF(leftPosition-text_width, text_Y,text_width ,10),model.Input_ProfileRange_POC_Color.ToDxBrush(RenderTarget));
-			
+				RenderTarget.DrawText(maxDeltaPrice.ToString(),Claster_textFormat,new SharpDX.RectangleF(leftPosition-text_width, text_Y,text_width ,model.Claster_Height),brush10DX);
 			}
-				
-				
-				
 			
-			
-			
-			
-			RenderTarget.DrawText("Σ "+volumeSum.ToString(),Claster_textFormat,new SharpDX.RectangleF(leftPosition, topPosition+Math.Abs(tmpVect.Y)+3, volumeSum.ToString().Length*8+10,10),Brushes.WhiteSmoke.ToDxBrush(RenderTarget));
-			
-			
+			RenderTarget.DrawText("Σ "+volumeSum.ToString(),Claster_textFormat,new SharpDX.RectangleF(leftPosition, topPosition+Math.Abs(tmpVect.Y)+3, volumeSum.ToString().Length*8+10,10),brush10DX);
+			if (Claster_textFormat != null)		{	Claster_textFormat.Dispose();	}
+			if (Claster_textFormatEach != null)		{	Claster_textFormatEach.Dispose();	}
 			
 			if(IsSelected)
 			{
-				
 				SharpDX.Vector2 tempVector1 = new Point(leftPosition+2,topPosition+2-20).ToVector2();
 				SharpDX.Vector2 tempVector2 = new Point(leftPosition-2+15,topPosition-2-20+15).ToVector2();
-				RenderTarget.DrawLine(tempVector1,tempVector2, Brushes.Gray.ToDxBrush(RenderTarget), 2);
+				RenderTarget.DrawLine(tempVector1,tempVector2, brush8DX, 2);
 				tempVector1.X+=11;
 				tempVector2.X-=11;
-				RenderTarget.DrawLine(tempVector1,tempVector2, Brushes.Gray.ToDxBrush(RenderTarget), 2);
-				RenderTarget.DrawRectangle(new SharpDX.RectangleF(leftPosition, topPosition-20, 15, 15),Brushes.Gray.ToDxBrush(RenderTarget),(float)1);
+				RenderTarget.DrawLine(tempVector1,tempVector2, brush8DX, 2);
+				RenderTarget.DrawRectangle(new SharpDX.RectangleF(leftPosition, topPosition-20, 15, 15),brush8DX,(float)1);
 				
-				RenderTarget.DrawRectangle(new SharpDX.RectangleF(leftPosition+20, topPosition-20, 15, 15),Brushes.Gray.ToDxBrush(RenderTarget),(float)1);
+				RenderTarget.DrawRectangle(new SharpDX.RectangleF(leftPosition+20, topPosition-20, 15, 15),brush8DX,(float)1);
 				string str = "";
 				switch(ProfileType)
 				{
@@ -607,22 +634,33 @@ namespace NinjaTrader.NinjaScript.DrawingTools
 				
 				SharpDX.DirectWrite.Factory fontFactory = new SharpDX.DirectWrite.Factory();
 				SharpDX.DirectWrite.TextFormat textFormat = new SharpDX.DirectWrite.TextFormat(fontFactory, "Segoe UI", 15);
-				RenderTarget.DrawText(str,textFormat,new SharpDX.RectangleF(leftPosition+23, topPosition-23, 15, 15),Brushes.WhiteSmoke.ToDxBrush(RenderTarget));
-				
-				
+				RenderTarget.DrawText(str,textFormat,new SharpDX.RectangleF(leftPosition+23, topPosition-23, 15, 15),brush7DX);
+				fontFactory.Dispose();
+				textFormat.Dispose();
 				if(ExtendedLine)
 				{
-					SharpDX.Direct2D1.Brush brush = Brushes.Gray.ToDxBrush(RenderTarget);
-					brush.Opacity = (float)0.5;
-					RenderTarget.FillRectangle(new SharpDX.RectangleF(leftPosition+42, topPosition-18, 11, 11),brush);
+					RenderTarget.FillRectangle(new SharpDX.RectangleF(leftPosition+42, topPosition-18, 11, 11),brush9DX);
 				}
-				RenderTarget.DrawRectangle(new SharpDX.RectangleF(leftPosition+40, topPosition-20, 15, 15),Brushes.Gray.ToDxBrush(RenderTarget),(float)1);
+				RenderTarget.DrawRectangle(new SharpDX.RectangleF(leftPosition+40, topPosition-20, 15, 15),brush8DX,(float)1);
 			}
-			
-			
-			
-                return;
+			RenderTarget.AntialiasMode = oldAntialiasMode;
+			if (brush0DX != null)		{	brush0DX.Dispose();	}
+			if (brush1DX != null)		{	brush1DX.Dispose();	}
+			if (brush2DX != null)		{	brush2DX.Dispose();	}
+			if (brush3DX != null)		{	brush3DX.Dispose();	}
+			if (brush4DX != null)		{	brush4DX.Dispose();	}
+			if (brush5DX != null)		{	brush5DX.Dispose();	}
+			if (brush6DX != null)		{	brush6DX.Dispose();	}
+			if (brush7DX != null)		{	brush7DX.Dispose();	}
+			if (brush8DX != null)		{	brush8DX.Dispose();	}
+			if (brush9DX != null)		{	brush9DX.Dispose();	}
+			if (brush10DX != null)		{	brush10DX.Dispose();	}
 		}
+		}
+            catch (Exception ex) { Print("Range Profile2 OnRender 663: " + ex);}
+			return;
+		}
+		
 	
 		protected override void OnStateChange()
 		{
@@ -631,7 +669,7 @@ namespace NinjaTrader.NinjaScript.DrawingTools
 				//LineStroke		            = new Stroke(Brushes.DarkGray, DashStyleHelper.Solid, 2f);
 				Description				    = "";
                 DrawingState			    = DrawingState.Building;
-				Name					    = "CustomLine";
+				Name					    = "RP2CustomLine";
 
 				StartAnchor = new ChartAnchor
 				{
@@ -650,6 +688,7 @@ namespace NinjaTrader.NinjaScript.DrawingTools
 				};
 				
 			}
+			
 			else if (State == State.Terminated)
             {
 				Dispose();

@@ -12,12 +12,17 @@ using NinjaTrader.Gui;
 using NinjaTrader.Gui.Chart;
 using NinjaTrader.Core.FloatingPoint;
 
+using System.ComponentModel;
+
 using NinjaTrader.NinjaScript.Indicators.MRPack;
 #endregion
 
 //This namespace holds Drawing tools in this folder and is required. Do not change it. 
 namespace NinjaTrader.NinjaScript.DrawingTools
 {
+	//[CLSCompliant(false)]
+	
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class CustomEllipse : DrawingTool
 	{
         private	const double	cursorSensitivity		= 15;
@@ -25,12 +30,20 @@ namespace NinjaTrader.NinjaScript.DrawingTools
 
 		public override IEnumerable<ChartAnchor> Anchors { get { return new[] { StartAnchor}; } }
 		
-		
 		public int Radius;
 		
 		public Model model;
 		
 		public Model.TickAggregatorElement TickAggregatorData;
+		
+		SharpDX.Direct2D1.Brush brush0DX;
+		SharpDX.Direct2D1.Brush brush1DX;
+		SharpDX.Direct2D1.Brush brush2DX;
+		SharpDX.Direct2D1.Brush brush3DX;
+		SharpDX.Direct2D1.Brush brush4DX;
+		SharpDX.Direct2D1.Brush brush5DX;
+		SharpDX.Direct2D1.Brush brush6DX;
+		SharpDX.Direct2D1.Brush brush7DX;
 		
 		//public bool tempInput;
 
@@ -49,7 +62,7 @@ namespace NinjaTrader.NinjaScript.DrawingTools
 		{
 			yield return new AlertConditionItem 
 			{
-				Name                    = "CustomLine",
+				Name                    = "CECustomLine",
 				ShouldOnlyDisplayName   = true,
 			};
 		}
@@ -152,8 +165,10 @@ namespace NinjaTrader.NinjaScript.DrawingTools
 				return false;
 			
 			if(!model.parent.Input_TickAggregator_OnOff)
+			{
 				return false;
-
+				
+			}
 			return true;
 		}
 		
@@ -211,7 +226,6 @@ namespace NinjaTrader.NinjaScript.DrawingTools
 						if (GetCursor(chartControl, chartPanel, chartScale, point) != null)
 							DrawingState = DrawingState.Moving;
 						else
-						// user whiffed.
 							IsSelected = false;
 					}
 					break;
@@ -252,12 +266,17 @@ namespace NinjaTrader.NinjaScript.DrawingTools
 
 		public override void OnRender(ChartControl chartControl, ChartScale chartScale)
 		{
-			/*if (LineStroke == null)
+		try
+		{
+			if (!model.parent.Input_TickAggregator_OnOff)
+			{
+				Dispose();
 				return;
-
-			LineStroke.RenderTarget			= RenderTarget;*/
-
-			// first of all, turn on anti-aliasing to smooth out our line
+			}
+			if (model != null)
+			{
+           	
+			SharpDX.Direct2D1.AntialiasMode oldAntialiasMode = RenderTarget.AntialiasMode;
 			RenderTarget.AntialiasMode	= SharpDX.Direct2D1.AntialiasMode.PerPrimitive;
 
 			ChartPanel	panel			= chartControl.ChartPanels[chartScale.PanelIndex];
@@ -275,15 +294,22 @@ namespace NinjaTrader.NinjaScript.DrawingTools
 			
 			SharpDX.Vector2			startVec			= startPointAdjusted.ToVector2();
 			
-
             // if a plain ol' line, then we're all done
             // if we're an arrow line, make sure to draw the actual line. for extended lines, only a single
             // line to extended points is drawn below, to avoid unneeded multiple DrawLine calls
            // RenderTarget.DrawLine(startVec, endVec, tmpBrush, LineStroke.Width, LineStroke.StrokeStyle);
-			
-			
-			
-			
+			brush0DX = new SharpDX.Direct2D1.SolidColorBrush(RenderTarget, SharpDX.Color.WhiteSmoke);
+			brush1DX = model.parent.Input_TickAggregator_AskColor.ToDxBrush(RenderTarget);
+			brush1DX.Opacity = (float)0.3;
+			brush2DX = model.parent.Input_TickAggregator_BidColor.ToDxBrush(RenderTarget);
+			brush2DX.Opacity = (float)0.3;
+			brush3DX = model.parent.Input_TickAggregator_AskColor.ToDxBrush(RenderTarget);
+			brush4DX = model.parent.Input_TickAggregator_BidColor.ToDxBrush(RenderTarget);
+			brush5DX = new SharpDX.Direct2D1.SolidColorBrush(RenderTarget, SharpDX.Color.Black);
+			brush5DX.Opacity = (float)0.01;
+			brush6DX = new SharpDX.Direct2D1.SolidColorBrush(RenderTarget, SharpDX.Color.White);
+			brush6DX.Opacity = (float)0.3;
+			brush7DX = new SharpDX.Direct2D1.SolidColorBrush(RenderTarget, SharpDX.Color.White);
 			
 			SharpDX.Direct2D1.Ellipse el = new SharpDX.Direct2D1.Ellipse(startVec,Radius,Radius);
 			
@@ -329,72 +355,67 @@ namespace NinjaTrader.NinjaScript.DrawingTools
 				
 				if(model.parent.Input_TickAggregator_Standart)
 				{
-					RenderTarget.DrawText(str1,Claster_textFormat,new SharpDX.RectangleF(startVec.X+5, startVec.Y-Radius-23,str1.Length*8 ,10),Brushes.WhiteSmoke.ToDxBrush(RenderTarget));
-					RenderTarget.DrawText(str,Claster_textFormat,new SharpDX.RectangleF(startVec.X+5, startVec.Y-Radius-12,str.Length*8 ,10),Brushes.WhiteSmoke.ToDxBrush(RenderTarget));
+					RenderTarget.DrawText(str1,Claster_textFormat,new SharpDX.RectangleF(startVec.X+5, startVec.Y-Radius-23,str1.Length*8 ,10),brush0DX);
+					RenderTarget.DrawText(str,Claster_textFormat,new SharpDX.RectangleF(startVec.X+5, startVec.Y-Radius-12,str.Length*8 ,10),brush0DX);
 				}
 				else
 				{
-					RenderTarget.DrawText(str1,Claster_textFormat,new SharpDX.RectangleF(startVec.X+5, Position_Y1-23,str1.Length*8 ,10),Brushes.WhiteSmoke.ToDxBrush(RenderTarget));
-					RenderTarget.DrawText(str,Claster_textFormat,new SharpDX.RectangleF(startVec.X+5, Position_Y1-12,str.Length*8 ,10),Brushes.WhiteSmoke.ToDxBrush(RenderTarget));
+					RenderTarget.DrawText(str1,Claster_textFormat,new SharpDX.RectangleF(startVec.X+5, Position_Y1-23,str1.Length*8 ,10),brush0DX);
+					RenderTarget.DrawText(str,Claster_textFormat,new SharpDX.RectangleF(startVec.X+5, Position_Y1-12,str.Length*8 ,10),brush0DX);
 				}
-				
+				Claster_textFormat.Dispose();
 			}
-			
-			
-			
-			
-			SharpDX.Direct2D1.Brush brushAsk = model.parent.Input_TickAggregator_AskColor.ToDxBrush(RenderTarget);
-			brushAsk.Opacity = (float)0.3;
-			SharpDX.Direct2D1.Brush brushBid = model.parent.Input_TickAggregator_BidColor.ToDxBrush(RenderTarget);
-			brushBid.Opacity = (float)0.3;
 			
 			if(model.parent.Input_TickAggregator_Standart)
 			{
 				if(TickAggregatorData.Volume_Ask>TickAggregatorData.Volume_Bid)
 				{
-					RenderTarget.DrawEllipse(el,model.parent.Input_TickAggregator_AskColor.ToDxBrush(RenderTarget));
+					RenderTarget.DrawEllipse(el,brush3DX);
 					if(IsSelected)
 					{
-						SharpDX.Direct2D1.Brush brush2 = model.parent.Input_TickAggregator_AskColor.ToDxBrush(RenderTarget);
-						brush2.Opacity = (float)0.3;
-						RenderTarget.FillEllipse(el, brush2);
+						RenderTarget.FillEllipse(el, brush1DX);
 					}
 				}
 				else if(TickAggregatorData.Volume_Ask<TickAggregatorData.Volume_Bid)
 				{
-					RenderTarget.DrawEllipse(el,model.parent.Input_TickAggregator_BidColor.ToDxBrush(RenderTarget));
+					RenderTarget.DrawEllipse(el,brush4DX);
 					if(IsSelected)
 					{
-						SharpDX.Direct2D1.Brush brush2 = model.parent.Input_TickAggregator_BidColor.ToDxBrush(RenderTarget);
-						brush2.Opacity = (float)0.3;
-						RenderTarget.FillEllipse(el, brush2);
+						RenderTarget.FillEllipse(el, brush2DX);
 					}
 				}
 				else if(TickAggregatorData.Volume_Ask==TickAggregatorData.Volume_Bid)
 				{
-					RenderTarget.DrawEllipse(el,Brushes.White.ToDxBrush(RenderTarget));
+					RenderTarget.DrawEllipse(el,brush7DX);
 					if(IsSelected)
 					{
-						SharpDX.Direct2D1.Brush brush2 = Brushes.White.ToDxBrush(RenderTarget);
-						brush2.Opacity = (float)0.3;
-						RenderTarget.FillEllipse(el, brush2);
+						RenderTarget.FillEllipse(el, brush6DX);
 					}
 				}
 				
 				if(!IsSelected)
 				{
-					SharpDX.Direct2D1.Brush brush1 = Brushes.Black.ToDxBrush(RenderTarget);
-					brush1.Opacity = (float)0.01;
-					RenderTarget.FillEllipse(el, brush1);
+					RenderTarget.FillEllipse(el, brush5DX);
 				}
 			}
 			else
 			{
-				RenderTarget.FillRectangle(new SharpDX.RectangleF(Position_X1, Position_Y1 , Delta_X_Ask,Delta_Y),brushAsk );
-				RenderTarget.FillRectangle(new SharpDX.RectangleF(Position_X1+Delta_X_Ask, Position_Y1 , Delta_X_Bid,Delta_Y), brushBid);
+				RenderTarget.FillRectangle(new SharpDX.RectangleF(Position_X1, Position_Y1 , Delta_X_Ask,Delta_Y),brush1DX );
+				RenderTarget.FillRectangle(new SharpDX.RectangleF(Position_X1+Delta_X_Ask, Position_Y1 , Delta_X_Bid,Delta_Y), brush2DX);
 			}
-			
-                return;
+				RenderTarget.AntialiasMode = oldAntialiasMode;
+				if (brush0DX != null)		{	brush0DX.Dispose();	}
+				if (brush1DX != null)		{	brush1DX.Dispose();	}
+				if (brush2DX != null)		{	brush2DX.Dispose();	}
+				if (brush3DX != null)		{	brush3DX.Dispose();	}
+				if (brush4DX != null)		{	brush4DX.Dispose();	}
+				if (brush5DX != null)		{	brush5DX.Dispose();	}
+				if (brush6DX != null)		{	brush6DX.Dispose();	}
+				if (brush7DX != null)		{	brush7DX.Dispose();	}
+			}
+		}
+			catch (Exception ex) { Print("MR CustomEllipse 417: " + ex); }
+			return;
 		}
 	
 		protected override void OnStateChange()
@@ -404,7 +425,7 @@ namespace NinjaTrader.NinjaScript.DrawingTools
 				//LineStroke		            = new Stroke(Brushes.DarkGray, DashStyleHelper.Solid, 2f);
 				Description				    = "";
                 DrawingState			    = DrawingState.Building;
-				Name					    = "CustomLine";
+				Name					    = "CECustomLine";
 
 				StartAnchor = new ChartAnchor
 				{
@@ -413,7 +434,7 @@ namespace NinjaTrader.NinjaScript.DrawingTools
 					DrawingTool	    = this,
 					DisplayName     = Custom.Resource.NinjaScriptDrawingToolAnchorStart,
 				};
-
+				
 				/*EndAnchor = new ChartAnchor
 				{
                     IsBrowsable     = true,
@@ -421,14 +442,16 @@ namespace NinjaTrader.NinjaScript.DrawingTools
 					DrawingTool	    = this,
 					DisplayName     = Custom.Resource.NinjaScriptDrawingToolAnchorEnd,
 				};*/
+			
 			}
+			
 			else if (State == State.Terminated)
             {
 				Dispose();
             }
 		}
 	}
-
+	
 	public static partial class Draw
 	{
 		private static T DrawCustomEllipseTypeCore<T>(NinjaScriptBase owner, bool isAutoScale, string tag,

@@ -11,12 +11,17 @@ using NinjaTrader.Data;
 using NinjaTrader.Gui;
 using NinjaTrader.Gui.Chart;
 using NinjaTrader.Core.FloatingPoint;
+
+using System.ComponentModel;
+
 using NinjaTrader.NinjaScript.Indicators.MRPack;
 #endregion
 
 //This namespace holds Drawing tools in this folder and is required. Do not change it. 
 namespace NinjaTrader.NinjaScript.DrawingTools
 {
+	//[CLSCompliant(false)]
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class RangeProfile : DrawingTool
 	{
         private	const double	cursorSensitivity		= 5;
@@ -301,8 +306,9 @@ namespace NinjaTrader.NinjaScript.DrawingTools
 
 		public override void OnRender(ChartControl chartControl, ChartScale chartScale)
 		{
-			
-
+			if (model == null) return;
+			try
+			{
 			// first of all, turn on anti-aliasing to smooth out our line
 			RenderTarget.AntialiasMode	= SharpDX.Direct2D1.AntialiasMode.PerPrimitive;
 
@@ -410,6 +416,8 @@ namespace NinjaTrader.NinjaScript.DrawingTools
 			
 			
                 return;
+			}
+			catch (Exception ex) { Print("MR CustomProfile 414: " + ex); }
 		}
 	
 		protected override void OnStateChange()
